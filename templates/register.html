@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ByteStorm</title>
+    <link rel="stylesheet" href="../static/login_styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="login-wrapper">
+            <div class="header">ByteStorm注册</div>
+            <!-- 监控注册按钮 -->
+            <form action="/register" method="post">
+                <div class="form-wrapper">
+                    <input type="text" name="username" value="{{ username }}" placeholder="请输入用户名" class="input-item">
+                    <input type="password" name="password" placeholder="请输入密码" class="input-item">
+                    <input type="password" name="confirm_password" placeholder="请确认密码" class="input-item">
+                    <!-- 提示错误信息 -->
+                    <div class="error-message">{{ error_message }}</div>
+                    <button class="btn">立即注册</button>
+                </div>
+            </form>
+
+            <div class="msg">
+                已有账户？
+                <a href="/login">登入</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
