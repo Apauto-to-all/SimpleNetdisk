@@ -1,28 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from AppConfig import AppConfig  # 导入所有的key
+from fastapi import APIRouter, Request, Request, Form, HTTPException, status
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+
+router = APIRouter()
+templates = Jinja2Templates(directory="templates")
 
 
-class Register(AppConfig):  # 注册页面
+@router.get("/register", response_class=HTMLResponse)
+async def register(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
 
-    def register(self):  # 注册
-        if request.method == "POST":
-            username = request.form.get("username")  # 用户名
-            password = request.form.get("password")  # 获取密码
-            confirm_password = request.form.get("confirm_password")  # 获取确认密码
-            error_message = None  # 错误信息
-            if not username or not password or not confirm_password:
-                error_message = "用户名或密码不能为空"
-                return render_template(
-                    "register.html",
-                    error_message=error_message,
-                    username=username,
-                )
-            if password != confirm_password:
-                error_message = "两次密码不一致"
-                return render_template(
-                    "register.html",
-                    error_message=error_message,
-                    username=username,
-                )
 
-        return render_template("register.html")  # 渲染注册页面
+@router.post("/register")
+async def register(username: str = Form(...), password: str = Form(...)):
+    if not username or not password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="用户名或密码不能为空",
+        )
+    # 在这里添加你的用户注册逻辑
+    return {"message": "注册成功"}
