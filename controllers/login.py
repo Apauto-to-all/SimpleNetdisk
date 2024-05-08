@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Request, Request, Form, HTTPException, status
 from fastapi.templating import Jinja2Templates  # 功能：用于渲染模板
-from fastapi.responses import HTMLResponse  # 功能：用于返回 HTML 响应
+from fastapi.responses import (
+    HTMLResponse,  # 用于返回 HTML 响应
+    RedirectResponse,  # 用于重定向
+)
 from fastapi.templating import Jinja2Templates  # 功能：用于渲染模板
 from typing import Optional  # 功能：用于声明可选参数
 
@@ -30,7 +33,7 @@ async def login(
             },
         )
     if username == "admin" and password == "passwd":
-        return {"message": "登录成功"}
+        return RedirectResponse(url="/index")  # 重定向到首页
     else:
         error_message = "用户名或密码错误"
         return templates.TemplateResponse(
