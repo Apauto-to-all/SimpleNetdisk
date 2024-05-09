@@ -4,7 +4,7 @@ from fastapi.responses import (
     RedirectResponse,  # 用于重定向
 )
 from fastapi.staticfiles import StaticFiles  # 静态文件目录
-from controllers import login, register, index  # 导入登录、注册、首页路由
+from controllers import login, register, index, upload
 
 from typing import Optional
 
@@ -25,6 +25,7 @@ async def root(
 app.include_router(login.router)  # 注册登录路由
 app.include_router(register.router)  # 注册注册路由
 app.include_router(index.router)  # 注册首页路由
+app.include_router(upload.router)  # 注册上传文件路由
 
 if __name__ == "__main__":
     import uvicorn

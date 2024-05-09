@@ -1,14 +1,25 @@
-<!-- 一个欢迎页面 -->
 <!DOCTYPE html>
 <html>
 
 <head>
-    <title>Welcome</title>
+    <title>ByteStorm</title>
+    <link rel="stylesheet" href="../static/index_styles.css">
+    <script src="../static/index.js"></script>
 </head>
 
-<body>
-    <h1>Welcome</h1>
-    <p>Welcome to our website!</p>
+<body class="container">
+    <h1 class="header">上传文件</h1>
+    <!-- 显示上传表单的按钮 -->
+    <div class="button-container">
+        <button class="btn" onclick="showUploadForm()">显示上传功能</button>
+    </div>
+    <!-- 模态窗口 -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe id="uploadIframe" src="../static/upfile.html"></iframe>
+        </div>
+    </div>
 </body>
 
 </html>
