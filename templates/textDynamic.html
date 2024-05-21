@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <h2>Buttons</h2>
+    {% for button in data %}
+    <button value="{{ button.value }}">{{ button.text }}</button>
+    {% endfor %}
+</body>
+
+</html>
