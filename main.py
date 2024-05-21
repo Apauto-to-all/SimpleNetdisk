@@ -4,7 +4,7 @@ from fastapi.responses import (
     RedirectResponse,  # 用于重定向
 )
 from fastapi.staticfiles import StaticFiles  # 静态文件目录
-from controllers import login, register, index, upload, down
+from routes import login, register, index, upload, down
 
 from typing import Optional
 
