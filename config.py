@@ -6,7 +6,7 @@ port = 19764
 
 # 数据库配置
 db_name = "PostgreSQL"
-db_host = "localhost"
+db_host = "47.121.25.171"
 db_port = 5432
 
 # 数据库

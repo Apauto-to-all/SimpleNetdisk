@@ -5,8 +5,9 @@ from fastapi.responses import (
 )
 from fastapi.staticfiles import StaticFiles  # 静态文件目录
 from routes import login, register, index, upload, down, text
-
+import config  # 导入配置文件
 from typing import Optional
+from db.connection import DatabaseConnectionManager  # 导入数据库连接管理器
 
 app = FastAPI()  # 创建 FastAPI 实例
 app.mount("/static", StaticFiles(directory="static"), name="static")  # 静态文件目录
@@ -32,4 +33,4 @@ app.include_router(text.router)  # 注册测试路由
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="localhost", port=19764)
+    uvicorn.run(app, host=config.host, port=config.port)  # 启动 FastAPI 服务
