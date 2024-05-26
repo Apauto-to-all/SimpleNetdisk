@@ -22,3 +22,6 @@ database = "text"
 """
 connect_user = "user"
 connect_user_password = "password"
+
+# 保存登入的时间，单位为min
+login_time = 30

@@ -12,6 +12,7 @@ from fastapi.responses import (
 )
 from typing import Optional  # 功能：用于声明可选参数
 from utils import user_utils  # 导入用户工具
+import config  # 导入全局配置文件
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")  # 模板目录
@@ -85,7 +86,7 @@ async def loginSuccess(username):
     response.set_cookie(
         key="access_token",  # 设置 Cookie 的键
         value=user_utils.get_token(username),  # 设置 Cookie 的值
-        max_age=60 * 30,  # 设置 Cookie 有效期为 30 分钟
+        max_age=60 * config.login_time,  # 设置 Cookie 有效期为 config.login_time 分钟
     )
     return response
 
@@ -105,7 +106,7 @@ async def loginHtml(
     :return: 登录页面响应
     """
     if error_message:  # 如果有错误信息，说明登录失败
-        await user_utils.login_or_register_failed()  # 登录失败，访问者错误次数+1
+        await user_utils.login_or_register_failed(request)  # 登录失败，访问者错误次数+1
     return templates.TemplateResponse(
         "login.html",
         {

@@ -85,6 +85,16 @@ async def register(
             regCode,
             isUseCapthca=isUseCapthca,
         )
+    usernameFormat = user_utils.verify_username_format(username)  # 验证用户名格式
+    if usernameFormat:  # 如果用户名格式错误，这里的 usernameFormat 是用户名格式要求信息
+        error_message = usernameFormat  # 错误信息，提示用户名格式
+        return await registerHtml(
+            request,
+            error_message,
+            username,
+            regCode,
+            isUseCapthca=isUseCapthca,
+        )
     if not await user_utils.verifyUsername(username):  # 验证用户名是否存在
         error_message = "用户名已存在，请更换用户名"
         return await registerHtml(
@@ -114,6 +124,7 @@ async def registerSuccess(username, password, regCode):
     :param username: 用户名
     :param password: 密码
     :param regCode: 注册码
+    :return: 注册成功页面响应，重定向到登录页面
     """
     # 写入数据库
     await user_utils.registerSuccess(
@@ -140,7 +151,7 @@ async def registerHtml(
     :return: 注册页面响应
     """
     if error_message:  # 如果有错误信息，说明注册失败
-        await user_utils.login_or_register_failed()  # 注册失败，访问者错误次数+1
+        await user_utils.login_or_register_failed(request)  # 注册失败，访问者错误次数+1
     return templates.TemplateResponse(
         "register.html",
         {

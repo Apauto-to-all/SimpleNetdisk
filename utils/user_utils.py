@@ -1,4 +1,5 @@
 from . import jwt_token, password_utils
+from fastapi import Request
 
 
 def isLogin(access_token) -> bool:
@@ -19,6 +20,22 @@ def get_token(user: str) -> str:
     :return: JWT Token
     """
     return jwt_token.get_access_jwt(user)  # 生成 JWT Token
+
+
+def verify_get_username_format(username: str) -> str:
+    """
+    只能是英文或数字，长度在4-20之间
+    验证用户名格式，并返回用户名缺少的格式信息
+    :param username: 用户名
+    :return: 如果用户名格式正确，返回 ""，否则返回用户名缺少的格式信息
+    """
+    if len(username) < 4:
+        return "用户名长度不能小于4"
+    if len(username) > 20:
+        return "用户名长度不能大于20"
+    if not username.isalnum():
+        return "用户名只能包含字母和数字"
+    return ""
 
 
 async def verifyLogin(username, password) -> bool:
@@ -90,11 +107,13 @@ async def isUseCapthca() -> bool:
     return False  # 否则返回 False
 
 
-async def login_or_register_failed():
+async def login_or_register_failed(request: Request):
     """
     登录或注册失败
     访问者错误次数+1
     """
+    client_host = request.client.host  # 获取客户端IP地址
+    user_agent = request.headers.get("User-Agent")  # 获取User-Agent请求头
     global failed_count  # 全局变量
     failed_count += 1  # 错误次数+1
     pass

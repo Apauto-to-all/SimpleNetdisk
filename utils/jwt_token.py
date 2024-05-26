@@ -1,8 +1,8 @@
 import uuid
 import jwt  # 导入jwt模块
-import binascii  # 导入binascii模块，用于生成随机密钥
 from datetime import datetime, timedelta, timezone
 import secrets  # 导入secrets模块，用于生成随机密钥
+import config  # 导入配置文件
 
 ALGORITHM = "HS256"  # 加密算法
 
@@ -34,7 +34,7 @@ def get_access_jwt(user: str) -> str:
         "jti": str(uuid.uuid4()),  # JWT ID
         "user": user,
         "exp": datetime.now(timezone.utc)
-        + timedelta(minutes=20),  # 使用带有UTC时区信息的datetime对象
+        + timedelta(minutes=config.login_time),  # 使用带有UTC时区信息的datetime对象
     }
     access_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)  # 生成token
     return access_token
