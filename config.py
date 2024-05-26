@@ -16,14 +16,9 @@ database = "text"
 # root_uesr = "postgres"
 # root_password = "password"
 
-# 数据库查询用户名和密码
-query_user = "query"
-query_password = "password"
-
-# 数据库插入用户名和密码
-insert_user = "insert"
-insert_password = "password"
-
-# 数据库更新用户名和密码
-update_user = "update"
-update_password = "password"
+# 数据库操作用户名和密码
+"""
+只用于查询，更新，插入操作，无删除权限
+"""
+connect_user = "user"
+connect_user_password = "password"

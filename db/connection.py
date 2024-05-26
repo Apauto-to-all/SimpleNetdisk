@@ -11,14 +11,14 @@ class DatabaseConnectionManager:
     def __init__(self):
         self.pool = None  # 数据库连接池
 
-    # 使用查询用户连接数据库，主要用于查询
-    async def queryPool(self):
+    # 使用操作用户连接数据库，主要用于查询，更新，插入操作
+    async def connectPool(self):
         """
-        连接数据库，使用查询用户
+        连接数据库，使用操作用户
         """
         self.pool = await asyncpg.create_pool(  # 创建数据库连接池，可以异步访问数据库
-            user=config.query_user,  # 查询用户的用户名
-            password=config.query_password,  # 查询用户的密码
+            user=config.connect_user,  # 操作用户
+            password=config.connect_user_password,  # 查询用户的密码
             database=database,  # 数据库名称
             host=db_host,  # 数据库主机
             port=db_port,  # 数据库端口
