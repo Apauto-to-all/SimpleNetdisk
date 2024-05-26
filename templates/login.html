@@ -17,6 +17,10 @@
                 <div class="form-wrapper">
                     <input type="text" name="username" value="{{ username }}" placeholder="请输入用户名" class="input-item">
                     <input type="password" name="password" placeholder="请输入密码" class="input-item">
+                    {% if isUseCapthca %}
+                    <!-- 插入显示captcha的HTML代码 -->
+                    <input type="text" name="captcha" placeholder="请输入验证码" class="input-item">
+                    {% endif %}
                     <!-- 提示错误信息 -->
                     <div class="error-message">{{ error_message }}</div>
                     <button class="btn">立即登入</button>

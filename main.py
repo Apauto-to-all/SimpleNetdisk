@@ -8,6 +8,7 @@ from routes import login, register, index, upload, down, text
 import config  # 导入配置文件
 from typing import Optional
 from db.connection import DatabaseConnectionManager  # 导入数据库连接管理器
+from utils import user_utils
 
 app = FastAPI()  # 创建 FastAPI 实例
 app.mount("/static", StaticFiles(directory="static"), name="static")  # 静态文件目录
@@ -17,7 +18,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")  # 静态�
 async def root(
     access_token: Optional[str] = Cookie(None),
 ):
-    if access_token == "token":
+    if user_utils.isLogin(access_token):  # 判断是否登录
         return RedirectResponse(url="/index", status_code=303)  # 重定向到首页
     else:
         return RedirectResponse(url="/login", status_code=303)  # 重定向到登录页面

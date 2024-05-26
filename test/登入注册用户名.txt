@@ -1,0 +1,8 @@
+username : admin
+username : admin1
+
+password : 1aA123456_
+
+regCode : regCode
+
+captcha : captcha
