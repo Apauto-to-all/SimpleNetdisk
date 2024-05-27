@@ -38,6 +38,7 @@ async def login(
     username: Optional[str] = Form(""),  # 获取用户名
     password: Optional[str] = Form(""),  # 获取密码
     captcha: Optional[str] = Form(""),  # 获取验证码
+    hashed_captcha: Optional[str] = Cookie(None),  # 获取加密后的验证码
 ):
     isUseCapthca = False
     if await user_utils.isUseCapthca():  # 判断是否使用验证码
@@ -50,7 +51,7 @@ async def login(
                 username,
                 isUseCapthca=isUseCapthca,
             )
-        if not await user_utils.verifyCaptcha(captcha):  # 验证验证码
+        if not await user_utils.verifyCaptcha(captcha, hashed_captcha):  # 验证验证码
             error_message = "验证码错误"
             return await loginHtml(
                 request,

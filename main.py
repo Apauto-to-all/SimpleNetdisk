@@ -4,7 +4,7 @@ from fastapi.responses import (
     RedirectResponse,  # 用于重定向
 )
 from fastapi.staticfiles import StaticFiles  # 静态文件目录
-from routes import login, register, index, upload, down, text
+from routes import login, register, index, upload, down, text, captcha
 import config  # 导入配置文件
 from typing import Optional
 from db.connection import DatabaseConnectionManager  # 导入数据库连接管理器
@@ -29,6 +29,7 @@ app.include_router(register.router)  # 注册注册路由
 app.include_router(index.router)  # 注册首页路由
 app.include_router(upload.router)  # 注册上传文件路由
 app.include_router(down.router)  # 注册下载文件路由
+app.include_router(captcha.router)  # 注册验证码路由
 app.include_router(text.router)  # 注册测试路由
 
 if __name__ == "__main__":

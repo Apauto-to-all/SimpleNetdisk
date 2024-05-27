@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Request, Form, HTTPException, status
+from fastapi import APIRouter, Cookie, Request, Request, Form
 from fastapi.templating import Jinja2Templates  # 功能：用于渲染模板
 from fastapi.responses import HTMLResponse, RedirectResponse  # 功能：用于返回 HTML 响应
 from fastapi.templating import Jinja2Templates  # 功能：用于渲染模板
@@ -26,6 +26,7 @@ async def register(
     confirm_password: Optional[str] = Form(""),  # 获取确认密码
     regCode: Optional[str] = Form(""),  # 获取注册码
     captcha: Optional[str] = Form(""),  # 获取验证码
+    hashed_captcha: Optional[str] = Cookie(None),  # 获取加密后的验证码
 ):
     isUseCapthca = False
     if await user_utils.isUseCapthca():  # 判断是否使用验证码
@@ -39,7 +40,7 @@ async def register(
                 regCode,
                 isUseCapthca=isUseCapthca,
             )
-        if not await user_utils.verifyCaptcha(captcha):  # 验证验证码
+        if not await user_utils.verifyCaptcha(captcha, hashed_captcha):  # 验证验证码
             error_message = "验证码错误"
             return await registerHtml(
                 request,

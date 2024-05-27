@@ -19,6 +19,7 @@
                     <input type="password" name="password" placeholder="请输入密码" class="input-item">
                     {% if isUseCapthca %}
                     <!-- 插入显示captcha的HTML代码 -->
+                    <img src="/captcha" alt="Captcha" onclick="this.src='/captcha?' + new Date().getTime();">
                     <input type="text" name="captcha" placeholder="请输入验证码" class="input-item">
                     {% endif %}
                     <!-- 提示错误信息 -->

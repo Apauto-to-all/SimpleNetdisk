@@ -1,9 +1,10 @@
-import bcrypt
+import bcrypt  # 导入bcrypt库，用于密码加密
 
 
 def encrypt_password(password: str) -> str:
     """
-    加密密码，返回加密后的密码
+    :param password: 密码
+    :return: 返回加密后的密码
     """
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode(), salt)
@@ -12,16 +13,20 @@ def encrypt_password(password: str) -> str:
 
 def verify_password(hashed_password: str, password: str) -> bool:
     """
-    验证密码，返回True或False
+    :param hashed_password: 加密后的密码
+    :param password: 密码
+    :return: 返回密码是否正确，True表示密码正确，False表示密码错误
     """
-    return bcrypt.checkpw(
-        password.encode(), hashed_password.encode()
-    )  # 返回True或False，表示密码是否正确
+    try:
+        return bcrypt.checkpw(
+            password.encode(), hashed_password.encode()
+        )  # 返回True或False，表示密码是否正确
+    except Exception as e:
+        return False  # 返回False，表示密码错误
 
 
 def verify_get_password_format(password) -> str:
     """
-    验证密码格式，并返回密码缺少的格式信息
     :param password: 密码
     :return: 密码缺少的格式信息，如果密码格式正确，返回空字符串
     """

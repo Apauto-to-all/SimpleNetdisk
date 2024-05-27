@@ -61,13 +61,16 @@ async def verifyUsername(username: str) -> bool:
     return True  # 如果用户名不存在
 
 
-async def verifyCaptcha(captcha: str) -> bool:
+async def verifyCaptcha(captcha, hashed_captcha) -> bool:
     """
     验证验证码
     :param captcha: 验证码
+    :param hashed_captcha: 加密后的验证码
     :return: 如果验证码正确，返回 True，否则返回 False
     """
-    if captcha == "captcha":  # 如果验证码正确
+    if password_utils.verify_password(
+        hashed_captcha, captcha.lower()
+    ) or password_utils.verify_password(hashed_captcha, captcha):
         return True  # 返回 True
     return False  # 返回 False
 
