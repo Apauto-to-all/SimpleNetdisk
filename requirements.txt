@@ -1,2 +1,5 @@
 fastapi
 asyncpg
+bcrypt
+PyJWT
+captcha
