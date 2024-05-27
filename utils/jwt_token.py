@@ -9,7 +9,7 @@ ALGORITHM = "HS256"  # 加密算法
 
 def create_secret_key():
     """
-    创建并储存密钥
+    创建并储存密钥，无返回值
     """
     SECRET_KEY = secrets.token_hex(32)  # 生成64位随机密钥
     # 储存密钥
@@ -19,6 +19,7 @@ def create_secret_key():
 def get_secret_key() -> str:
     """
     获取密钥
+    :return: 密钥
     """
     # 读取密钥
     SECRET_KEY = "secret_key"
@@ -28,6 +29,8 @@ def get_secret_key() -> str:
 def get_access_jwt(user: str) -> str:
     """
     生成JWT
+    :param user: 用户信息
+    :return: JWT Token
     """
     SECRET_KEY = get_secret_key()
     payload = {
@@ -43,6 +46,8 @@ def get_access_jwt(user: str) -> str:
 def get_user_from_jwt(token: str) -> str:
     """
     验证JWT，返回用户信息
+    :param token: JWT Token
+    :return: 用户信息，如果Token无效，返回None
     """
     SECRET_KEY = get_secret_key()
     try:

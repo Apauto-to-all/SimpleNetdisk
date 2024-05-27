@@ -8,6 +8,8 @@
 </head>
 
 <body class="container">
+    <!-- 头像 -->
+    <img src="/user/avatar" alt="avatar">
     <h1 class="header">上传文件</h1>
     <!-- 显示上传表单的按钮 -->
     <div class="button-container">
@@ -21,9 +23,9 @@
         </div>
     </div>
     <!-- 跳转下载文件页面 -->
-    <div class="button-container">
-        <a class="btn" href="/down">下载文件</button>
-    </div>
+    <a class="btn" href="/down">下载文件</a>
+    <button id="logoutButton"
+        onclick="fetch('/logout', { method: 'GET', credentials: 'include' }).then(function(response) { if (response.redirected) { window.location.href = response.url; } });">登出</button>
 </body>
 
 </html>

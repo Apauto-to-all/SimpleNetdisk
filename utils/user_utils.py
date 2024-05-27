@@ -1,16 +1,15 @@
 from . import jwt_token, password_utils
 from fastapi import Request
+from db.connection import DatabaseConnectionManager  # 导入数据库连接管理器
 
 
-def isLogin(access_token) -> bool:
+def isLogin_getUser(access_token: str) -> str:
     """
-    判断用户是否登录
+    判断用户是否登录，并通过 JWT Token 获取用户名
     :param access_token: JWT Token
-    :return: 如果用户登录，返回 True，否则返回 False
+    :return: 如果用户登录，返回用户名，否则返回空字符串
     """
-    if jwt_token.get_user_from_jwt(access_token):  # 从 JWT 中获取用户名
-        return True  # 返回 True
-    return False
+    return jwt_token.get_user_from_jwt(access_token)  # 从 JWT 中获取用户名
 
 
 def get_token(user: str) -> str:

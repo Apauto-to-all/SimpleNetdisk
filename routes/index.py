@@ -23,7 +23,7 @@ async def index(
     request: Request,
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
 ):
-    if not user_utils.isLogin(access_token):  # 如果未登录，或者登录状态过期
+    if not user_utils.isLogin_getUser(access_token):  # 如果未登录，或者登录状态过期
         return RedirectResponse(url="/login", status_code=303)  # 重定向到登录页面
 
     return templates.TemplateResponse(

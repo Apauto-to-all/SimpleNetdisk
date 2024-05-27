@@ -23,7 +23,7 @@ async def login(
     request: Request,  # 用于接收请求
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
 ):
-    if user_utils.isLogin(access_token):  # 判断是否登录
+    if user_utils.isLogin_getUser(access_token):  # 判断是否登录
         return RedirectResponse(url="/index", status_code=303)
 
     isUseCapthca = False  # 是否使用验证码，默认为 False
