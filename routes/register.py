@@ -86,7 +86,7 @@ async def register(
             regCode,
             isUseCapthca=isUseCapthca,
         )
-    usernameFormat = user_utils.verify_username_format(username)  # 验证用户名格式
+    usernameFormat = user_utils.verify_get_username_format(username)  # 验证用户名格式
     if usernameFormat:  # 如果用户名格式错误，这里的 usernameFormat 是用户名格式要求信息
         error_message = usernameFormat  # 错误信息，提示用户名格式
         return await registerHtml(
