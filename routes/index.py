@@ -27,5 +27,5 @@ async def index(
         return RedirectResponse(url="/login", status_code=303)  # 重定向到登录页面
 
     return templates.TemplateResponse(
-        "index.html", {"request": request}
+        "textIndex.html", {"request": request}
     )  # 否则进入网盘首页
