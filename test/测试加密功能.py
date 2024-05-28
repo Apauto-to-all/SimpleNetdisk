@@ -1,7 +1,7 @@
-from utils import get_uuid, jwt_token, password_utils
+from utils import jwt_token, password_utils, uuid_utils
 
 # 生成uuid
-uuid = get_uuid.get_uuid()
+uuid = uuid_utils.get_uuid()
 print(uuid)
 
 # 加密密码
