@@ -1,10 +1,8 @@
-import hashlib
 import os
-from fastapi import APIRouter, FastAPI, Request, Response
-from datetime import datetime, timedelta
-from uuid import uuid4
+from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
+import config
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -12,7 +10,9 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/down")
 async def down(request: Request):
-    return templates.TemplateResponse("down.html", {"request": request})
+    return templates.TemplateResponse(
+        f"{config.test_prefix}down.html", {"request": request}
+    )
 
 
 # 生成临时链接并下载文件的路由

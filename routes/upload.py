@@ -13,7 +13,7 @@ def get_file_path(user_file_path="files"):
     return file_path
 
 
-@router.post("/upfile/")
+@router.post("/upfile/")  # 上传文件
 async def upload_file(files: List[UploadFile] = File(...)):
     file_paths = []
     for file in files:

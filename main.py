@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Cookie  # 导入 FastAPI 框架
 from fastapi.responses import (
+    FileResponse,  # 用于返回文件
     HTMLResponse,  # 用于返回 HTML 响应
     RedirectResponse,  # 用于重定向
 )
@@ -11,6 +12,11 @@ from utils import user_utils
 
 app = FastAPI()  # 创建 FastAPI 实例
 app.mount("/static", StaticFiles(directory="static"), name="static")  # 静态文件目录
+
+
+@app.get("/favicon.ico")  # 获取网站图标
+async def get_favicon():
+    return FileResponse("static/favicon.ico", media_type="image/x-icon")  # 返回网站图标
 
 
 @app.get("/", response_class=HTMLResponse)

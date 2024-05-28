@@ -28,3 +28,9 @@ login_time = 30
 
 # 用户头像储存路径
 user_avatar_path = "files/avatars"
+
+# 测试前缀
+isTest = True  # 是否为测试模式
+test_prefix = ""  # 测试前缀
+if isTest:  # 如果为测试模式，使用有测试前缀的测试文件
+    test_prefix = "test-"  # 测试前缀

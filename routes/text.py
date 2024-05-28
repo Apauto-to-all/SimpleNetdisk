@@ -22,5 +22,5 @@ data = [
 @router.get("/text", response_class=HTMLResponse)
 async def text(request: Request):
     return templates.TemplateResponse(
-        "textDynamic.html", {"request": request, "data": data}
+        f"test-dynamic.html", {"request": request, "data": data}
     )

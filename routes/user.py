@@ -1,5 +1,6 @@
 from typing import Optional
 from fastapi import APIRouter, Cookie, Response
+from fastapi.responses import FileResponse
 
 from utils import user_utils
 import config
@@ -7,7 +8,7 @@ import config
 router = APIRouter()
 
 
-@router.get("/user/avatar")
+@router.get("/user/avatar")  # 获取用户头像
 async def get_avatar(access_token: Optional[str] = Cookie(None)):
     username = user_utils.isLogin_getUser(access_token)  # 从 JWT 中获取用户名
     if username:  # 判断用户名是否存在

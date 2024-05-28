@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Cookie, Request, Request, Form
 from fastapi.templating import Jinja2Templates  # 功能：用于渲染模板
 from fastapi.responses import HTMLResponse, RedirectResponse  # 功能：用于返回 HTML 响应
-from fastapi.templating import Jinja2Templates  # 功能：用于渲染模板
 from typing import Optional
-
 from utils import user_utils, password_utils
+import config
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -58,16 +57,6 @@ async def register(
             regCode,
             isUseCapthca=isUseCapthca,
         )
-    if not await user_utils.verifyRegCode(regCode):  # 验证注册码
-        error_message = "注册码错误"
-        return await registerHtml(
-            request,
-            error_message,
-            username,
-            regCode,
-            isUseCapthca=isUseCapthca,
-        )
-
     if not username or not password or not confirm_password:  # 判断用户名或密码是否为空
         error_message = "用户名或密码不能为空"
         return await registerHtml(
@@ -96,8 +85,9 @@ async def register(
             regCode,
             isUseCapthca=isUseCapthca,
         )
-    if not await user_utils.verifyUsername(username):  # 验证用户名是否存在
-        error_message = "用户名已存在，请更换用户名"
+    passwordFormat = password_utils.verify_get_password_format(password)  # 验证密码格式
+    if passwordFormat:  # 如果密码格式错误，这里的 passwordFormat 是密码格式要求信息
+        error_message = passwordFormat  # 错误信息，提示密码格式
         return await registerHtml(
             request,
             error_message,
@@ -105,9 +95,17 @@ async def register(
             regCode,
             isUseCapthca=isUseCapthca,
         )
-    passwordFormat = password_utils.verify_get_password_format(password)  # 验证密码格式
-    if passwordFormat:  # 如果密码格式错误，这里的 passwordFormat 是密码格式要求信息
-        error_message = passwordFormat  # 错误信息，提示密码格式
+    if not await user_utils.verifyRegCode(regCode):  # 验证注册码
+        error_message = "注册码错误"
+        return await registerHtml(
+            request,
+            error_message,
+            username,
+            regCode,
+            isUseCapthca=isUseCapthca,
+        )
+    if not await user_utils.verifyUsername(username):  # 验证用户名是否存在
+        error_message = "用户名已存在，请更换用户名"
         return await registerHtml(
             request,
             error_message,
@@ -154,7 +152,7 @@ async def registerHtml(
     if error_message:  # 如果有错误信息，说明注册失败
         await user_utils.login_or_register_failed(request)  # 注册失败，访问者错误次数+1
     return templates.TemplateResponse(
-        "register.html",
+        f"{config.test_prefix}register.html",
         {
             "request": request,
             "error_message": error_message,

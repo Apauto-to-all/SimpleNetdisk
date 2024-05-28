@@ -109,7 +109,7 @@ async def loginHtml(
     if error_message:  # 如果有错误信息，说明登录失败
         await user_utils.login_or_register_failed(request)  # 登录失败，访问者错误次数+1
     return templates.TemplateResponse(
-        "login.html",
+        f"{config.test_prefix}login.html",
         {
             "request": request,
             "error_message": error_message,

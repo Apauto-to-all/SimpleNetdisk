@@ -13,6 +13,7 @@ from fastapi.responses import RedirectResponse  # 功能：用于重定向
 from fastapi.templating import Jinja2Templates  # 功能：用于渲染模板
 from typing import Optional  # 功能：用于声明可选参数
 from utils import user_utils
+import config
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -27,5 +28,5 @@ async def index(
         return RedirectResponse(url="/login", status_code=303)  # 重定向到登录页面
 
     return templates.TemplateResponse(
-        "textIndex.html", {"request": request}
+        f"{config.test_prefix}index.html", {"request": request}
     )  # 否则进入网盘首页
