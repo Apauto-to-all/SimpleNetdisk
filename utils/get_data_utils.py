@@ -1,4 +1,4 @@
-import uuid_utils
+from . import uuid_utils
 
 
 def get_nickname(username: str) -> dict:
@@ -48,7 +48,7 @@ def get_files(username: str, folder_id: str) -> list:
                 "uuid": "8a5eca0a-7946-4650-ba7c-14f64140f15a",
                 "name": "name2",
                 "size": "size2",
-                "type": "type2",
+                "type": "tddddype2",
                 "time": "time2",
             },
         ]
@@ -90,8 +90,8 @@ def get_folder_path(username: str, folder_id: str) -> dict:
         uuid_str = "adaa6474-a046-4148-bbfc-6ea9f7cc62f3c7f0654a-e4b1-479e-bc22-ac9f9237b5fce7ab8022-7998-432b-bfa2-f44185e28e45"  # 文件夹的层级关系
         uuid_list = uuid_utils.split_uuids(uuid_str)  # 分割文件夹id
         dict_path = {}
-        for uuid in uuid_list:
-            dict_path[uuid] = "name"
+        for i, uuid in enumerate(uuid_list):  # 遍历文件夹id
+            dict_path[uuid] = f"name{i}"  # 文件夹id+文件夹名
         return dict_path
 
 
@@ -135,7 +135,7 @@ def get_trash_files(username: str) -> list:
             {
                 "uuid": "c2f6aa56-4c38-41f8-9d7a-a54ad42f178a",
                 "name": "name2",
-                "type": "type2",
+                "type": "type",
                 "time": "time2",
             },
         ]

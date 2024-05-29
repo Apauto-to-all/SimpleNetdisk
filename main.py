@@ -5,18 +5,13 @@ from fastapi.responses import (
     RedirectResponse,  # 用于重定向
 )
 from fastapi.staticfiles import StaticFiles  # 静态文件目录
-from routes import login, register, index, upload, down, text, captcha, logout, user
+from routes import get_img, login, register, index, upload, down, text, captcha, logout
 import config  # 导入配置文件
 from typing import Optional
 from utils import user_utils
 
 app = FastAPI()  # 创建 FastAPI 实例
 app.mount("/static", StaticFiles(directory="static"), name="static")  # 静态文件目录
-
-
-@app.get("/favicon.ico")  # 获取网站图标
-async def get_favicon():
-    return FileResponse("static/favicon.ico", media_type="image/x-icon")  # 返回网站图标
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -37,7 +32,7 @@ app.include_router(down.router)  # 注册下载文件路由
 app.include_router(captcha.router)  # 注册验证码路由
 app.include_router(text.router)  # 注册测试路由
 app.include_router(logout.router)  # 注册注销路由
-app.include_router(user.router)  # 注册用户信息路由
+app.include_router(get_img.router)  # 注册获取图片路由
 
 if __name__ == "__main__":
     import uvicorn
