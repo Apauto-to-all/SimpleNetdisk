@@ -67,16 +67,57 @@
         <a id="time">{{ folder_item.time }}</a>
         {% if folder_item.password %}
         <img src="/folder/lock" alt="lock">
+        <!-- 解密文件夹 -->
+
         {% else %}
         <img src="/folder/unlock" alt="unlock">
-        {% endif %}
         <!-- 加密文件夹 -->
+        <button id="encryptButton{{ folder_item.uuid }}">加密此文件夹</button>
+        <!-- 模态窗口 -->
+        <div id="encryptModal{{ folder_item.uuid }}" class="encryptModal" style="display: none;">
+            <!-- 表单 -->
+            <form action="/encrypt?folder_id={{ folder_item.uuid }}" method="post">
+                <input type="password" name="password" placeholder="输入密码">
+                <button id="encryptSubmit{{ folder_item.uuid }}">确认</button>
+            </form>
+            <button id="encryptCancel{{ folder_item.uuid }}">取消</button>
+        </div>
+        <!-- 加密文件夹，结束 -->
+        <script>
+            document.getElementById('encryptButton{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('encryptModal{{ folder_item.uuid }}').style.display = "block";
+            }
+            document.getElementById('encryptCancel{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('encryptModal{{ folder_item.uuid }}').style.display = "none";
+            }
+        </script>
+        {% endif %}
+        <!--重命名文件 -->
+        <button id="renameButton{{ folder_item.uuid }}">重命名此文件</button>
+        <!--模态窗口 -->
+        <div id="renameModal{{ folder_item.uuid }}" class="renameModal" style="display: none;">
+            <!-- 表单 -->
+            <form action="/rename?folder_id={{ folder_item.uuid }}" method="post">
+                <input type="text" name="new_folder_name" placeholder="输入新的名称">
+                <button id="renameSubmit{{ folder_item.uuid }}">确认</button>
+            </form>
+            <!-- 表单结束 -->
+            <button id="renameCancel{{ folder_item.uuid }}">取消</button>
+        </div>
+        <script>
+            document.getElementById('renameButton{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('renameModal{{ folder_item.uuid }}').style.display = "block";
+            }
+            document.getElementById('renameCancel{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('renameModal{{ folder_item.uuid }}').style.display = "none";
+            }
+        </script>
 
     </div>
     {% endfor %}
     <!-- 文件夹显示结束 -->
 
-    <!-- 实现文件显示 -->
+    <!--实现文件显示 -->
     <h2>文件</h2>
     {% for file_item in all_dict.files %}
     <div type="file" class="file">
@@ -86,7 +127,27 @@
         <a id="size">{{ file_item.size }}</a>
         <a href="/download?file_id={{ file_item.uuid }}">下载此文件</a>
         <a href="/delete?file_id={{ file_item.uuid }}">删除此文件</a>
+        <!-- 重命名文件 -->
+        <button id="renameButton{{ file_item.uuid }}">重命名此文件</button>
+        <!-- 弹出窗口 -->
+        <div id="renameModal{{ file_item.uuid }}" class="renameModal" style="display: none;">
+            <!-- 表单 -->
+            <form action="/rename?file_id={{ file_item.uuid }}" method="post">
+                <input type="text" name="new_file_name" placeholder="输入新的名称">
+                <button id="renameSubmit{{ file_item.uuid }}">确认</button>
+            </form>
+            <button id="renameCancel{{ file_item.uuid }}">取消</button>
+        </div>
     </div>
+    <!-- 重命名文件js代码 -->
+    <script>
+        document.getElementById('renameButton{{ file_item.uuid }}').onclick = function () {
+            document.getElementById('renameModal{{ file_item.uuid }}').style.display = "block";
+        }
+        document.getElementById('renameCancel{{ file_item.uuid }}').onclick = function () {
+            document.getElementById('renameModal{{ file_item.uuid }}').style.display = "none";
+        }
+    </script>
     {% endfor %}
     <!-- 文件显示结束 -->
 
