@@ -21,8 +21,7 @@
             <iframe id="uploadIframe" src="../static/html/upfile.html"></iframe>
         </div>
     </div>
-    <!-- 跳转下载文件页面 -->
-    <a class="btn" href="/down">下载文件</a>
+
     <!-- 登出实现 -->
     <h2>登出功能实现</h2>
     <button id="logoutButton"
@@ -41,6 +40,13 @@
     <p class="capacity-info" id="capacity_percent">已用百分比: {{ all_user.capacity.percent }}</p>
     <!-- 显示用户信息，结束 -->
 
+    <!-- 批量操作 -->
+    <h2>批量操作</h2>
+    <a> 批量下载</a>
+    <a> 批量移动</a>
+    <a> 批量删除</a>
+    <!-- 批量操作，结束 -->
+
     <!-- 显示父类文件路径 -->
     <h2>父级文件夹的路径</h2>
     <ul>
@@ -52,6 +58,7 @@
     </ul>
     <!-- 实现文件夹显示，结束 -->
 
+    <!-- 实现文件夹显示 -->
     <h2>文件夹</h2>
     {% for folder_item in all_dict.folders %}
     <div type="folder" class="folder">
@@ -63,6 +70,8 @@
         {% else %}
         <img src="/folder/unlock" alt="unlock">
         {% endif %}
+        <!-- 加密文件夹 -->
+
     </div>
     {% endfor %}
     <!-- 文件夹显示结束 -->
@@ -75,6 +84,8 @@
         <a id="{{ file_item.uuid }}">{{ file_item.name }}</a>
         <a id="time">{{ file_item.time }}</a>
         <a id="size">{{ file_item.size }}</a>
+        <a href="/download?file_id={{ file_item.uuid }}">下载此文件</a>
+        <a href="/delete?file_id={{ file_item.uuid }}">删除此文件</a>
     </div>
     {% endfor %}
     <!-- 文件显示结束 -->

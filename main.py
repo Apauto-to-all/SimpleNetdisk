@@ -1,11 +1,10 @@
 from fastapi import FastAPI, Cookie  # 导入 FastAPI 框架
 from fastapi.responses import (
-    FileResponse,  # 用于返回文件
     HTMLResponse,  # 用于返回 HTML 响应
     RedirectResponse,  # 用于重定向
 )
 from fastapi.staticfiles import StaticFiles  # 静态文件目录
-from routes import get_img, login, register, index, upload, down, text, captcha, logout
+from routes import files, get_img, login, register, index, upload, text, captcha, logout
 import config  # 导入配置文件
 from typing import Optional
 from utils import user_utils
@@ -28,7 +27,7 @@ app.include_router(login.router)  # 注册登录路由
 app.include_router(register.router)  # 注册注册路由
 app.include_router(index.router)  # 注册首页路由
 app.include_router(upload.router)  # 注册上传文件路由
-app.include_router(down.router)  # 注册下载文件路由
+app.include_router(files.router)  # 注册下载文件路由
 app.include_router(captcha.router)  # 注册验证码路由
 app.include_router(text.router)  # 注册测试路由
 app.include_router(logout.router)  # 注册注销路由
