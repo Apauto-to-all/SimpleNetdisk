@@ -15,11 +15,18 @@ templates = Jinja2Templates(directory="templates")
 async def download_file(
     file_id: Optional[str] = None,  # 添加查询参数
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
+    unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
     # 判断是否登录
     username = user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
+    lock_folder_id = files_utils.get_parent_folder_id_is_locked(username, file_id)
+    if lock_folder_id:  # 文件的父类文件夹被加密
+        if not unlock_folder:
+            return {"error": "文件所属的文件夹被加密，请先解密再使用"}
+        if not password_utils.verify_password(unlock_folder, lock_folder_id):
+            return {"error": "文件所属的文件夹未解密，请先解密再使用"}
     file_dict = files_utils.verify_and_return_files_info(username, file_id)
     if not file_dict:
         return {"error": "文件不存在"}
@@ -41,11 +48,18 @@ async def download_file(
 async def delete_file(
     file_id: Optional[str] = None,  # 添加查询参数
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
+    unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
     # 判断是否登录
     username = user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
+    lock_folder_id = files_utils.get_parent_folder_id_is_locked(username, file_id)
+    if lock_folder_id:  # 文件的父类文件夹被加密
+        if not unlock_folder:
+            return {"error": "文件所属的文件夹被加密，请先解密再使用"}
+        if not password_utils.verify_password(unlock_folder, lock_folder_id):
+            return {"error": "文件所属的文件夹未解密，请先解密再使用"}
     # 获取被删除文件的父级文件夹id
     parent_folder_id = files_utils.delete_file_get_parent_folder_id(username, file_id)
     if parent_folder_id:
@@ -61,12 +75,18 @@ async def rename_file(
     new_file_name: Optional[str] = Form(None),  # 读取表单数据
     new_folder_name: Optional[str] = Form(None),  # 读取表单数据
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
+    unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
     # 判断是否登录
     username = user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
     if file_id and new_file_name:  # 重命名文件
+        if files_utils.is_folder_encrypted(username, file_id):  # 文件夹被加密
+            if not unlock_folder:
+                return {"error": "文件夹被加密，请先解密再使用"}
+            if not password_utils.verify_password(unlock_folder, file_id):
+                return {"error": "该文件夹未解密，请先解密再使用"}
         parent_folder_id = files_utils.rename_file_get_parent_folder_id(
             username,
             file_id,
@@ -75,6 +95,12 @@ async def rename_file(
         if parent_folder_id:
             return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
     if folder_id and new_folder_name:  # 重命名文件夹
+        lock_folder_id = files_utils.get_parent_folder_id_is_locked(username, file_id)
+        if lock_folder_id:  # 文件的父类文件夹被加密
+            if not unlock_folder:
+                return {"error": "文件所属的文件夹被加密，请先解密再使用"}
+            if not password_utils.verify_password(unlock_folder, lock_folder_id):
+                return {"error": "文件所属的文件夹未解密，请先解密再使用"}
         parent_folder_id = files_utils.rename_folder_get_parent_folder_id(
             username,
             folder_id,
@@ -113,28 +139,29 @@ async def encrypt_folder(
 async def decrypt_folder(
     # 临时解密还是删除加密
     folder_id: Optional[str] = None,  # 添加查询参数
-    is_temporary: Optional[bool] = Form(False),  # 读取表单数据
     password: Optional[str] = Form(None),  # 读取表单数据
+    is_temporary: Optional[bool] = Form(False),  # 读取表单数据
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
 ):
+    print(folder_id, password, is_temporary)
     # 判断是否登录
     username = user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
-    if folder_id and password:
+    if folder_id and password:  # 解密文件夹
         parent_folder_id = files_utils.decrypt_folder_get_parent_folder_id(
             username,
             folder_id,
             password,
             is_temporary,
         )
-        if parent_folder_id:
+        if parent_folder_id:  # 解密成功
             response = RedirectResponse(
                 url=f"/index/{parent_folder_id}", status_code=303
             )
             if is_temporary:
                 response.set_cookie(
-                    key=f"folder-{folder_id}",
+                    key=f"unlock_folder",
                     value=password_utils.encrypt_password(folder_id),
                 )
             return response

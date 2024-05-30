@@ -169,3 +169,27 @@ def decrypt_folder_get_parent_folder_id(
                 rm_folder_password(username, folder_id)  # 删除文件夹密码
             return "/"
     return ""  # 解密失败
+
+
+def is_folder_encrypted(username: str, folder_id: str) -> bool:
+    """
+    判断文件夹是否加密
+    :param username: 用户名
+    :param folder_id: 文件夹id
+    :return: 是否加密，True 为加密，False 为未加密
+    """
+    if username and folder_id:
+        return False
+    return True
+
+
+def get_parent_folder_id_is_locked(username: str, file_id: str) -> str:
+    """
+    如果文件的父级文件夹被加密，返回父级文件夹id，否则返回空字符串
+    :param username: 用户名
+    :param file_id: 文件id
+    :return: 父级文件夹id
+    """
+    if username and file_id:
+        return "/"
+    return ""  # 获取失败

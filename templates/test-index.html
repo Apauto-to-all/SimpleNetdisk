@@ -68,6 +68,29 @@
         {% if folder_item.password %}
         <img src="/folder/lock" alt="lock">
         <!-- 解密文件夹 -->
+        <button id="decryptButton{{ folder_item.uuid }}">解密此文件夹</button>
+        <!-- 模态窗口 -->
+        <div id="decryptModal{{ folder_item.uuid }}" class="decryptModal" style="display: none;">
+            <!-- 表单 -->
+            <form action="/decrypt?folder_id={{ folder_item.uuid }}" method="post">
+                <input type="password" name="password" placeholder="输入密码">
+                <input type="checkbox" id="is_temporary{{ folder_item.uuid }}" name="is_temporary" value="False">
+                <label for="option">永久删除密码</label>
+                <button id="decryptSubmit{{ folder_item.uuid }}">确认</button>
+            </form>
+            <button id="decryptCancel{{ folder_item.uuid }}">取消</button>
+        </div>
+        <script>
+            document.getElementById('is_temporary{{ folder_item.uuid }}').addEventListener('change', function () {
+                this.value = this.checked ? 'True' : 'False';
+            });
+            document.getElementById('decryptButton{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('decryptModal{{ folder_item.uuid }}').style.display = "block";
+            }
+            document.getElementById('decryptCancel{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('decryptModal{{ folder_item.uuid }}').style.display = "none";
+            }
+        </script>
 
         {% else %}
         <img src="/folder/unlock" alt="unlock">
@@ -82,7 +105,6 @@
             </form>
             <button id="encryptCancel{{ folder_item.uuid }}">取消</button>
         </div>
-        <!-- 加密文件夹，结束 -->
         <script>
             document.getElementById('encryptButton{{ folder_item.uuid }}').onclick = function () {
                 document.getElementById('encryptModal{{ folder_item.uuid }}').style.display = "block";
