@@ -24,9 +24,33 @@ class DatabaseConnectionManager:
             port=db_port,  # 数据库端口
         )
 
+    # 创建表
+    async def createTable(self):
+        """
+        创建表
+        :return: 如果创建表成功就返回 True，否则返回 False
+        """
+        sql = """
+        CREATE TABLE users(
+            username VARCHAR(255),
+            password VARCHAR(255),
+            PRIMARY KEY(username)
+        )
+        """
+        try:
+            async with self.pool.acquire() as connection:
+
+                result = await connection.execute(sql)
+                return True if result else False
+        except Exception as e:  # 如果创建表失败
+            return False
+
     # 关闭数据库连接
     async def close(self):
         """
         关闭数据库连接
         """
-        await self.pool.close()
+        try:
+            await self.pool.close()
+        except Exception as e:
+            pass
