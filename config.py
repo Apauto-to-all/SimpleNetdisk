@@ -10,7 +10,7 @@ db_host = "47.121.25.171"
 db_port = 5432
 
 # 数据库
-database = "text"
+database = "postgres"
 
 # 数据库root用户名和密码
 # root_uesr = "postgres"
