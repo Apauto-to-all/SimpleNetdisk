@@ -1,5 +1,7 @@
 # 验证文件夹id是否为用户的文件夹
-from utils import password_utils
+import os
+from utils import password_utils, uuid_utils
+import config
 
 
 def verify_folder_is_user(username: str, folder_id: str) -> bool:
@@ -13,10 +15,21 @@ def verify_folder_is_user(username: str, folder_id: str) -> bool:
         return True
 
 
+def verify_file_is_user(username: str, file_id: str) -> bool:
+    """
+    验证文件id是否为用户的文件
+    :param username: 用户名
+    :param file_id: 文件id
+    :return: 是否为用户的文件
+    """
+    if username and file_id:
+        return True
+
+
 # 验证并放回文件信息
 def verify_and_return_files_info(username: str, file_id: str) -> dict:
     """
-    验证并放回文件路径
+    验证并返回文件信息
     :param username: 用户名
     :param file_id: 文件id
     :return: 文件路径，文件名
@@ -68,6 +81,19 @@ def delete_file_get_parent_folder_id(username: str, file_id: str) -> str:
     :return: 父级文件夹id
     """
     if username and file_id:
+        return "/"
+    return ""  # 删除失败
+
+
+# 删除文件夹，获取父级文件夹id
+def delete_folder_get_parent_folder_id(username: str, folder_id: str) -> str:
+    """
+    删除文件夹
+    :param username: 用户名
+    :param folder_id: 文件夹id
+    :return: 父级文件夹id
+    """
+    if username and folder_id:
         return "/"
     return ""  # 删除失败
 
@@ -193,3 +219,56 @@ def get_parent_folder_id_is_locked(username: str, file_id: str) -> str:
     if username and file_id:
         return "/"
     return ""  # 获取失败
+
+
+def create_folder_get_folder_id(username: str, folder_id: str, folder_name: str) -> str:
+    """
+    创建文件夹
+    :param username: 用户名
+    :param folder_id: 父级文件夹id
+    :param folder_name: 文件夹名
+    :return: 文件夹id
+    """
+    if username and folder_id and folder_name:
+        new_folder_id = uuid_utils.get_uuid()
+        return new_folder_id
+    return ""  # 创建失败
+
+
+def get_file_path(username: str) -> str:
+    """
+    获取用户的文件路径
+    :param username: 用户名
+    :return: 文件路径
+    """
+    if username:
+        file_path = f"{config.user_files_path}/{username}"
+        if not file_path.exists():  # 如果文件夹不存在，创建文件夹
+            os.makedirs(file_path)
+        return file_path
+    return ""  # 获取失败
+
+
+def save_file_get_file_id(username: str, file_name: str, file_size_kb: str) -> str:
+    """
+    保存文件
+    :param username: 用户名
+    :param file_name: 文件名
+    :param file_size_kb: 文件大小
+    :return: 文件id
+    """
+    if username and file_name and file_size_kb:  # 保存文件
+        new_file_id = uuid_utils.get_uuid()  # 生成文件id
+        while not verify_file_is_user(
+            username, new_file_id
+        ):  # 如果文件id已经存在，重新生成，直到文件id不存在
+            new_file_id = uuid_utils.get_uuid()
+
+        user_all_file_path = config.user_files_path / username  # 用户的文件夹
+        if not user_all_file_path.exists():  # 如果文件夹不存在，创建文件夹
+            os.makedirs(user_all_file_path)  # 创建用户的文件夹
+
+        file_path = user_all_file_path / new_file_id  # 文件路径
+        if username and file_name and file_path and file_size_kb:  # 保存文件
+            return new_file_id
+    return ""  # 保存失败

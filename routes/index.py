@@ -37,6 +37,7 @@ async def index(
 
     all_user = get_data_utils.get_all_user(username)  # 获取用户的所有信息
     all_dict = get_data_utils.get_all(username, folder_id)  # 获取所有文件夹和文件信息
+
     if folder_id != "/" and files_utils.is_folder_encrypted(
         username, folder_id
     ):  # 判断文件夹是否被加密
@@ -44,6 +45,14 @@ async def index(
             return RedirectResponse(url="/index", status_code=303)
         if not password_utils.verify_password(unlock_folder, username):
             return RedirectResponse(url="/index", status_code=303)
+
+    if unlock_folder:
+        for i in all_dict.get("folders"):
+            if i.get("password") and password_utils.verify_password(
+                unlock_folder, i.get("uuid")
+            ):  # 判断文件夹是否被加密，并且被解密
+                i["password"] = ""  # 解密文件夹
+                break
     return templates.TemplateResponse(
         f"{config.test_prefix}index.html",
         {
