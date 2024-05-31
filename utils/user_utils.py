@@ -1,6 +1,6 @@
 from . import jwt_token, password_utils
 from fastapi import Request
-from db.connection import DatabaseConnectionManager  # 导入数据库连接管理器
+from db.connection import DatabaseOperation
 
 
 def isLogin_getUser(access_token: str) -> str:
