@@ -1,6 +1,6 @@
 import os
-from typing import Optional
-from fastapi import APIRouter, Cookie, Form, Request
+from typing import List, Optional
+from fastapi import APIRouter, Cookie, File, Form, UploadFile
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import config
@@ -43,10 +43,48 @@ async def download_file(
     )
 
 
-# 删除文件的路由
+@router.post("/upfile")  # 上传文件
+async def upload_file(
+    folder_id: Optional[str] = None,  # 添加查询参数
+    files: List[UploadFile] = File(...),
+    access_token: Optional[str] = Cookie(None),  # 读取 Cookie
+    unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
+):
+    username = user_utils.isLogin_getUser(access_token)
+    if not username:
+        return {"error": "未登录"}
+    if folder_id and files:  # 上传文件
+        if files_utils.is_folder_encrypted(username, folder_id):  # 文件夹被加密
+            if not unlock_folder:
+                return {"error": "文件夹被加密，请先解密再使用"}
+            if not password_utils.verify_password(unlock_folder, folder_id):
+                return {"error": "该文件夹未解密，请先解密再使用"}
+
+        for file in files:  # 遍历上传的文件
+            contents = await file.read()  # 读取文件内容
+            file_path = files_utils.get_file_path(username, folder_id)
+            file_name = file.filename  # 文件名
+            file_size_bytes = len(contents)  # 文件大小（字节）
+            file_size_kb = round(
+                file_size_bytes / 1024, 2
+            )  # 文件大小（KB），保留两位小数
+            file_id = files_utils.save_file_get_file_id(
+                username, file_name, file_size_kb
+            )
+            file_path = os.path.join(file_path, file_id)
+
+            with file_path.open("wb") as f:
+                f.write(contents)  # 写入文件
+        return RedirectResponse(url=f"/index/{folder_id}", status_code=303)
+
+    return {"error": "上传失败"}
+
+
+# 删除文件或文件夹的路由
 @router.get("/delete")
-async def delete_file(
+async def delete_file_folder(
     file_id: Optional[str] = None,  # 添加查询参数
+    folder_id: Optional[str] = None,  # 添加查询参数
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
     unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
@@ -54,16 +92,31 @@ async def delete_file(
     username = user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
-    lock_folder_id = files_utils.get_parent_folder_id_is_locked(username, file_id)
-    if lock_folder_id:  # 文件的父类文件夹被加密
-        if not unlock_folder:
-            return {"error": "文件所属的文件夹被加密，请先解密再使用"}
-        if not password_utils.verify_password(unlock_folder, lock_folder_id):
-            return {"error": "文件所属的文件夹未解密，请先解密再使用"}
-    # 获取被删除文件的父级文件夹id
-    parent_folder_id = files_utils.delete_file_get_parent_folder_id(username, file_id)
-    if parent_folder_id:
-        return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
+    if file_id and not folder_id:  # 删除文件
+        lock_folder_id = files_utils.get_parent_folder_id_is_locked(username, file_id)
+        if lock_folder_id:  # 文件的父类文件夹被加密
+            if not unlock_folder:
+                return {"error": "文件所属的文件夹被加密，请先解密再使用"}
+            if not password_utils.verify_password(unlock_folder, lock_folder_id):
+                return {"error": "文件所属的文件夹未解密，请先解密再使用"}
+        # 获取被删除文件的父级文件夹id
+        parent_folder_id = files_utils.delete_file_get_parent_folder_id(
+            username, file_id
+        )
+        if parent_folder_id:
+            return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
+    if folder_id and not file_id:  # 删除文件夹
+        if files_utils.is_folder_encrypted(username, folder_id):  # 文件夹被加密
+            if not unlock_folder:
+                return {"error": "文件夹被加密，请先解密再使用"}
+            if not password_utils.verify_password(unlock_folder, folder_id):
+                return {"error": "该文件夹未解密，请先解密再使用"}
+        parent_folder_id = files_utils.delete_folder_get_parent_folder_id(
+            username, folder_id
+        )
+        if parent_folder_id:
+            return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
+
     return {"error": "删除失败"}
 
 
@@ -82,11 +135,12 @@ async def rename_file(
     if not username:
         return {"error": "未登录"}
     if file_id and new_file_name:  # 重命名文件
-        if files_utils.is_folder_encrypted(username, file_id):  # 文件夹被加密
+        lock_folder_id = files_utils.get_parent_folder_id_is_locked(username, file_id)
+        if lock_folder_id:  # 文件的父类文件夹被加密
             if not unlock_folder:
-                return {"error": "文件夹被加密，请先解密再使用"}
-            if not password_utils.verify_password(unlock_folder, file_id):
-                return {"error": "该文件夹未解密，请先解密再使用"}
+                return {"error": "文件所属的文件夹被加密，请先解密再使用"}
+            if not password_utils.verify_password(unlock_folder, lock_folder_id):
+                return {"error": "文件所属的文件夹未解密，请先解密再使用"}
         parent_folder_id = files_utils.rename_file_get_parent_folder_id(
             username,
             file_id,
@@ -95,12 +149,11 @@ async def rename_file(
         if parent_folder_id:
             return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
     if folder_id and new_folder_name:  # 重命名文件夹
-        lock_folder_id = files_utils.get_parent_folder_id_is_locked(username, file_id)
-        if lock_folder_id:  # 文件的父类文件夹被加密
+        if files_utils.is_folder_encrypted(username, file_id):  # 文件夹被加密
             if not unlock_folder:
-                return {"error": "文件所属的文件夹被加密，请先解密再使用"}
-            if not password_utils.verify_password(unlock_folder, lock_folder_id):
-                return {"error": "文件所属的文件夹未解密，请先解密再使用"}
+                return {"error": "文件夹被加密，请先解密再使用"}
+            if not password_utils.verify_password(unlock_folder, file_id):
+                return {"error": "该文件夹未解密，请先解密再使用"}
         parent_folder_id = files_utils.rename_folder_get_parent_folder_id(
             username,
             folder_id,
@@ -166,3 +219,25 @@ async def decrypt_folder(
                 )
             return response
     return {"error": "解密失败"}
+
+
+# 创建文件夹
+@router.post("/create_folder")
+async def create_folder(
+    folder_id: Optional[str] = None,  # 添加查询参数
+    folder_name: Optional[str] = Form(None),  # 读取表单数据
+    access_token: Optional[str] = Cookie(None),  # 读取 Cookie
+):
+    # 判断是否登录
+    username = user_utils.isLogin_getUser(access_token)
+    if not username:
+        return {"error": "未登录"}
+    if folder_id and folder_name:  # 创建文件夹
+        if files_utils.is_folder_encrypted(username, folder_id):  # 文件夹被加密
+            return {"error": "加密的文件夹下无法创建文件夹"}
+        new_folder_id = files_utils.create_folder_get_folder_id(
+            username, folder_id, folder_name
+        )
+        if new_folder_id:
+            return RedirectResponse(url=f"/index/{folder_id}", status_code=303)
+    return {"error": "创建失败"}

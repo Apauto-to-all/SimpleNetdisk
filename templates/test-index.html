@@ -4,24 +4,9 @@
 <head>
     <title>简云</title>
     <link rel="stylesheet" href="../static/css/index_styles.css">
-    <script src="../static/js/index.js"></script>
 </head>
 
 <body class="container">
-
-    <h1 class="header">上传文件</h1>
-    <!-- 显示上传表单的按钮 -->
-    <div class="button-container">
-        <button class="btn" onclick="showUploadForm()">显示上传功能</button>
-    </div>
-    <!-- 模态窗口 -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <iframe id="uploadIframe" src="../static/html/upfile.html"></iframe>
-        </div>
-    </div>
-
     <!-- 登出实现 -->
     <h2>登出功能实现</h2>
     <button id="logoutButton"
@@ -114,7 +99,9 @@
             }
         </script>
         {% endif %}
-        <!--重命名文件 -->
+        <!-- 删除此文件夹 -->
+        <a href="/delete?folder_id={{ folder_item.uuid }}">删除此文件夹</a>
+        <!--重命名文件夹 -->
         <button id="renameButton{{ folder_item.uuid }}">重命名此文件</button>
         <!--模态窗口 -->
         <div id="renameModal{{ folder_item.uuid }}" class="renameModal" style="display: none;">
@@ -134,6 +121,7 @@
                 document.getElementById('renameModal{{ folder_item.uuid }}').style.display = "none";
             }
         </script>
+        <!--重命名文件结束-->
 
     </div>
     {% endfor %}
@@ -148,7 +136,7 @@
         <a id="time">{{ file_item.time }}</a>
         <a id="size">{{ file_item.size }}</a>
         <a href="/download?file_id={{ file_item.uuid }}">下载此文件</a>
-        <a href="/delete?file_id={{ file_item.uuid }}">删除此文件</a>
+        <a href="/delete_file?file_id={{ file_item.uuid }}">删除此文件</a>
         <!-- 重命名文件 -->
         <button id="renameButton{{ file_item.uuid }}">重命名此文件</button>
         <!-- 弹出窗口 -->
@@ -172,6 +160,68 @@
     </script>
     {% endfor %}
     <!-- 文件显示结束 -->
+
+    <!-- 创建文件夹 -->
+    <h2>创建文件夹</h2>
+    <button id="createFolderButton{{ folder_id }}">创建文件夹</button>
+
+    <!-- 模态窗口 -->
+    <div id="createFolderModal{{ folder_id }}" class="modal" class="createFolderModal" style="display: none;">
+        <div class="modal-content">
+            <!-- 表单 -->
+            <form action="/create_folder?folder_id={{ folder_id }}" method="post">
+                <input type="text" name="folder_name" placeholder="输入文件夹名称">
+                <button id="createFolderSubmit{{ folder_id }}">确认</button>
+            </form>
+            <!-- 表单结束 -->
+            <button id="createFolderCancel{{ folder_id }}">取消</button>
+        </div>
+    </div>
+    <script>
+        document.getElementById('createFolderButton{{ folder_id }}').onclick = function () {
+            document.getElementById('createFolderModal{{ folder_id }}').style.display = "block";
+        }
+        document.getElementById('createFolderCancel{{ folder_id }}').onclick = function () {
+            document.getElementById('createFolderModal{{ folder_id }}').style.display = "none";
+        }
+    </script>
+    <!-- 创建文件夹结束 -->
+
+    <!-- 上传文件 -->
+    <h2>上传文件</h2>
+    <!-- 显示上传表单的按钮 -->
+    <button onclick="showUploadForm()">显示上传功能</button>
+    <!-- 模态窗口 -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>请上传一个或多个文件</h2>
+            <form action="/upfile" method="post" enctype="multipart/form-data">
+                <input type="file" name="files" multiple>
+                <input type="submit" value="上传">
+            </form>
+        </div>
+    </div>
+    <script>
+        function showUploadForm() {
+            var modal = document.getElementById('uploadModal');
+            modal.style.display = "block";
+        }
+        window.onload = function () {
+            var modal = document.getElementById('uploadModal');
+            var span = document.getElementsByClassName("close")[0];
+
+            span.onclick = function () {
+                modal.style.display = "none";
+            }
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+    </script>
+    <!-- 上传文件结束 -->
 
 </body>
 
