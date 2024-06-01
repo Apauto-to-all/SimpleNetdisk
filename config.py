@@ -25,8 +25,8 @@ database = "SimpleCloud"
 """
 只用于查询，更新，插入操作，无删除权限
 """
-connect_user = "user"
-connect_user_password = "password"
+connect_user = "simple_cloud_user"
+connect_user_password = "BiYCR@@Vbkk32$QnbT*VPR&x$Hiy6N"
 
 # 保存登入的时间，单位为min
 login_time = 30
