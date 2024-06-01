@@ -72,7 +72,7 @@ VALUES ($1, $2, $3);
 INSERT INTO Grades (Grade, Mspace, Mupfile, Ktime)
  VALUES ($1, $2, $3, $4);
 
- --------注册码表--------
+--------注册码表--------
 --`查询`数据库中是否存在该注册码
 SELECT * FROM Rcodes
 WHERE Rcode = $1;
