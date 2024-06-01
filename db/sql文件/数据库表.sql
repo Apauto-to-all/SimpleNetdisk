@@ -69,7 +69,7 @@ create domain KidDomain varchar(1)
 --创建Key域，varchar类型，长度为64，密匙
 create domain KeyDomain varchar(64);
 
---建立Grades表，等级表
+--等级表
 create table Grades(
 	Grade GradeDomain primary key,
 	Mspace CapacityDomain,
@@ -77,7 +77,7 @@ create table Grades(
 	Ktime KtimeDomain
 );
 
---创建Users表，用户表
+--用户表
 create table Users(
 	Uname UnameDomain primary key,
 	Passwd PasswdDomain,
@@ -88,7 +88,7 @@ create table Users(
 	foreign key (Grade) references Grades(Grade)
 );
 
---建立Rcodes表，注册码表
+--注册码表
 create table Rcodes(
 	Rcode RcodeDomain primary key,
 	Cgrade GradeDomain,
@@ -96,7 +96,7 @@ create table Rcodes(
 	foreign key (Grade) references Grades(Grade)
 );
 
---建立Folders表,文件夹表
+--文件夹表
 create table Folders(
 	Uname UnameDomain,
 	Foid FidDomain,
@@ -110,7 +110,7 @@ create table Folders(
 	foreign key (Uname) references Users(Uname)
 );
 
---建立Files表，文件表
+--文件表
 create table Files(
 	Uname UnameDomain,
 	Fid FidDomain,
@@ -125,6 +125,7 @@ create table Files(
     foreign key (Uname) references Users(Uname)
 );
 
+--垃圾桶表
 create table Trash(
 	Uname UnameDomain,
 	Fid FidDomain,
@@ -136,11 +137,13 @@ create table Trash(
 	foreign key (Uname, Fid) references Files(Uname, Fid)
 );
 
+--缩略图表
 create table Shrink(
 	Fitype FitypeDomain primary key,
 	Spath PathDomain
 );
 
+--访问日志表
 create table Accesslog(
 	IP IPDomain,
 	Rheader PathDomain,
@@ -148,6 +151,7 @@ create table Accesslog(
 	primary key (IP, Rheader)
 );
 
+--密匙表
 create table Keys(
 	Kid KidDomain primary key,
 	Key KeyDomain,
