@@ -1,13 +1,16 @@
 --创建域
 --用户表相关域
 --创建Uname域，varchar类型，长度为20，用户名
-create domain UnameDomain varchar(20) not null;
+create domain UnameDomain varchar(20)
+         constraint Uname_not_null not null;
 --创建Passwd域，varchar类型，长度为60，密码
-create domain PasswdDomain varchar(60) not null;
+create domain PasswdDomain varchar(60)
+		constraint Passwd_not_null not null;
 --创建Grade域，smallint类型，等级
 create domain GradeDomain smallint;
---创建Uspace域，int类型，使用容量
-create domain UspaceDomain int default 0;
+create domain UspaceDomain int
+   constraint U_space CHECK (value >= 0)
+   DEFAULT 0;
 --创建Nname域，varchar类型，长度20，昵称
 create domain NnameDomain varchar(20);
 --创建Path域，text类型，头像路径/文件路径/当前文件夹隶属：文件夹的层级关系/缩略图路径/请求头
@@ -31,11 +34,16 @@ create domain KtimeDomain smallint;
 --创建Fid域，varchar类型，长度为36，用于文件(夹)id、父级文件夹id
 create domain FidDomain varchar(36);
 --创建Fname域，varchar类型，长度为50，文件夹名/文件名
-create domain FnameDomain varchar(50) not null;
+create domain FnameDomain varchar(50);
+   constraint Fname_not_null not null;
 --创建Fctime域，timestamp类型，文件夹创建时间/文件创建时间
-create domain FctimeDomain timestamp DEFAULT CURRENT_TIMESTAMP;
+create domain FctimeDomain timestamp 
+	CONSTRAINT Fctime_constraint CHECK (value IS NOT NULL)
+	DEFAULT CURRENT_TIMESTAMP;
 --创建if域，boolean类型，文件夹是否被删除/文件是否被删除/文件还是文件夹
-create domain ifDomain boolean DEFAULT FALSE;
+create domain ifDomain boolean 
+	CONSTRAINT if_constraint CHECK (value IN (TRUE, FALSE))
+	DEFAULT FALSE;
 --创建Fopasswd域，varchar类型，长度为60，文件夹密码
 create domain FopasswdDomain varchar(60);
 
@@ -49,12 +57,15 @@ create domain FitypeDomain varchar(20);
 
 --访问日志表相关域
 --创建IP域，varchar类型，长度为32
-create domain IPDomain varchar(32) not null;
+create domain IPDomain varchar(32) 
+constraint IP_not_null not null;
 
 
 --密匙表相关域
 --创建Kid域，varchar类型，长度为1，密匙ID
-create domain KidDomain varchar(1) DEFAULT 1;
+create domain KidDomain varchar(1) 
+CONSTRAINT Kid_constraint CHECK (LENGTH(value) = 1)
+DEFAULT 1;
 --创建Key域，varchar类型，长度为64，密匙
 create domain KeyDomain varchar(64);
 
