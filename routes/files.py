@@ -62,7 +62,7 @@ async def upload_file(
 
         for file in files:  # 遍历上传的文件
             contents = await file.read()  # 读取文件内容
-            file_path = files_utils.get_file_path(username, folder_id)
+            file_path = files_utils.get_file_path(username)
             file_name = file.filename  # 文件名
             file_size_bytes = len(contents)  # 文件大小（字节）
             file_size_kb = round(
@@ -73,7 +73,7 @@ async def upload_file(
             )
             file_path = os.path.join(file_path, file_id)
 
-            with file_path.open("wb") as f:
+            with open(file_path, "wb") as f:
                 f.write(contents)  # 写入文件
         return RedirectResponse(url=f"/index/{folder_id}", status_code=303)
 

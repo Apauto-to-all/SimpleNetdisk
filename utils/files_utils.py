@@ -22,8 +22,9 @@ def verify_file_is_user(username: str, file_id: str) -> bool:
     :param file_id: 文件id
     :return: 是否为用户的文件
     """
-    if username and file_id:
+    if username == "admin" and file_id == "aaa":
         return True
+    return False
 
 
 # 验证并放回文件信息
@@ -242,8 +243,8 @@ def get_file_path(username: str) -> str:
     :return: 文件路径
     """
     if username:
-        file_path = f"{config.user_files_path}/{username}"
-        if not file_path.exists():  # 如果文件夹不存在，创建文件夹
+        file_path = os.path.join(config.user_files_path, username)  # 用户的文件夹
+        if not os.path.exists(file_path):  # 如果文件夹不存在，创建文件夹
             os.makedirs(file_path)
         return file_path
     return ""  # 获取失败
@@ -259,16 +260,18 @@ def save_file_get_file_id(username: str, file_name: str, file_size_kb: str) -> s
     """
     if username and file_name and file_size_kb:  # 保存文件
         new_file_id = uuid_utils.get_uuid()  # 生成文件id
-        while not verify_file_is_user(
+        while verify_file_is_user(
             username, new_file_id
         ):  # 如果文件id已经存在，重新生成，直到文件id不存在
             new_file_id = uuid_utils.get_uuid()
 
-        user_all_file_path = config.user_files_path / username  # 用户的文件夹
-        if not user_all_file_path.exists():  # 如果文件夹不存在，创建文件夹
+        user_all_file_path = os.path.join(
+            config.user_files_path, username
+        )  # 用户的文件夹
+        if not os.path.exists(user_all_file_path):  # 如果文件夹不存在，创建文件夹
             os.makedirs(user_all_file_path)  # 创建用户的文件夹
 
-        file_path = user_all_file_path / new_file_id  # 文件路径
+        file_path = os.path.join(user_all_file_path, new_file_id)
         if username and file_name and file_path and file_size_kb:  # 保存文件
             return new_file_id
     return ""  # 保存失败
