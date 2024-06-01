@@ -196,13 +196,20 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>请上传一个或多个文件</h2>
-            <form action="/upfile" method="post" enctype="multipart/form-data">
-                <input type="file" name="files" multiple>
+            <form id="upfiles" action="/upfile?folder_id={{ folder_id }}" method="post" enctype="multipart/form-data">
+                <input type="file" id="files" name="files" multiple>
                 <input type="submit" value="上传">
             </form>
         </div>
     </div>
     <script>
+        document.getElementById('upfiles').addEventListener('submit', function (event) {
+            var fileInput = document.getElementById('files');
+            if (fileInput.files.length === 0) {
+                event.preventDefault();
+                alert('请至少选择一个文件上传');
+            }
+        });
         function showUploadForm() {
             var modal = document.getElementById('uploadModal');
             modal.style.display = "block";

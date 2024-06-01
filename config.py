@@ -26,8 +26,7 @@ connect_user_password = "password"
 # 保存登入的时间，单位为min
 login_time = 30
 
-# 储存路径
-
+# 储存路径，以path结尾
 # 用户头像路径
 user_avatar_path = "files/avatars"
 # 文件缩略图路径
