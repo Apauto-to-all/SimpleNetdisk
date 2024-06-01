@@ -1,5 +1,10 @@
 # 混合类
 # 数据库操作缩略图类
+import logging
+import traceback
+
+# 获取日志记录器
+logger = logging.getLogger(__name__)
 
 
 class ShrinkOperate:
@@ -17,4 +22,7 @@ class ShrinkOperate:
                 result = await connection.execute(sql)
                 return True if result else False
         except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
             return False

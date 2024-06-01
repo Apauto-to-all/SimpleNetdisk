@@ -11,7 +11,7 @@ def encrypt_password(password: str) -> str:
     return hashed_password.decode()  # 返回加密后的密码，长度为60位
 
 
-def verify_password(hashed_password: str, password: str) -> bool:
+async def verify_password(hashed_password: str, password: str) -> bool:
     """
     :param hashed_password: 加密后的密码
     :param password: 密码

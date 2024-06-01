@@ -1,5 +1,10 @@
 # 混合类
 # 数据库垃圾桶表操作类
+import logging
+import traceback
+
+# 获取日志记录器
+logger = logging.getLogger(__name__)
 
 
 class TrashOperate:
@@ -17,4 +22,7 @@ class TrashOperate:
                 result = await connection.execute(sql)
                 return True if result else False
         except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
             return False

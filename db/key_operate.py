@@ -1,5 +1,10 @@
 # 混合类
 # 密匙表的操作
+import logging
+import traceback
+
+# 获取日志记录器
+logger = logging.getLogger(__name__)
 
 
 class KeyOperate:
@@ -18,4 +23,7 @@ class KeyOperate:
                 result = await connection.execute(sql, key)
                 return True if result else False
         except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
             return False

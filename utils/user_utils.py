@@ -2,8 +2,10 @@ from . import jwt_token, password_utils
 from fastapi import Request
 from db.connection import DatabaseOperation
 
+db_operation = DatabaseOperation()
 
-def isLogin_getUser(access_token: str) -> str:
+
+async def isLogin_getUser(access_token: str) -> str:
     """
     判断用户是否登录，并通过 JWT Token 获取用户名
     :param access_token: JWT Token
@@ -12,7 +14,7 @@ def isLogin_getUser(access_token: str) -> str:
     return jwt_token.get_user_from_jwt(access_token)  # 从 JWT 中获取用户名
 
 
-def get_token(user: str) -> str:
+async def get_token(user: str) -> str:
     """
     通过用户名获取 Token
     :param user: 用户名
@@ -21,7 +23,7 @@ def get_token(user: str) -> str:
     return jwt_token.get_access_jwt(user)  # 生成 JWT Token
 
 
-def verify_get_username_format(username: str) -> str:
+async def verify_get_username_format(username: str) -> str:
     """
     只能是英文或数字，长度在4-20之间
     验证用户名格式，并返回用户名缺少的格式信息
@@ -44,7 +46,10 @@ async def verifyLogin(username, password) -> bool:
     :param password: 密码
     :return: 如果用户名和密码正确，返回 True，否则返回 False
     """
-    if username == "admin" and password == "passwd":
+    hashed_password = await db_operation.UsersTable_get_password(
+        username
+    )  # 获取用户密码
+    if await password_utils.verify_password(hashed_password, password):  # 验证密码
         return True
     return False
 
@@ -55,9 +60,9 @@ async def verifyUsername(username: str) -> bool:
     :param username: 用户名
     :return: 如果用户名存在，返回 False，否则返回 True
     """
-    if username == "admin":  # 如果用户名存在
+    if await db_operation.UsersTable_verify_username(username):
         return False
-    return True  # 如果用户名不存在
+    return True
 
 
 async def verifyCaptcha(captcha, hashed_captcha) -> bool:
@@ -67,9 +72,9 @@ async def verifyCaptcha(captcha, hashed_captcha) -> bool:
     :param hashed_captcha: 加密后的验证码
     :return: 如果验证码正确，返回 True，否则返回 False
     """
-    if password_utils.verify_password(
+    if await password_utils.verify_password(
         hashed_captcha, captcha.lower()
-    ) or password_utils.verify_password(hashed_captcha, captcha):
+    ) or await password_utils.verify_password(hashed_captcha, captcha):
         return True  # 返回 True
     return False  # 返回 False
 
@@ -78,11 +83,11 @@ async def verifyRegCode(regCode: str) -> bool:
     """
     验证注册码
     :param regCode: 注册码
-    :return: 如果注册码正确，返回 True，否则返回 False
+    :return: 如果注册码正确，且使用次数大于 0，返回 True，否则返回 False
     """
-    if regCode == "regCode":  # 如果注册码正确
-        return True  # 返回 True
-    return False  # 返回 False
+    if await db_operation.RcodesTable_verify_rcode(regCode):
+        return True
+    return False
 
 
 async def registerSuccess(username: str, password: str, regCode: str):
@@ -93,20 +98,26 @@ async def registerSuccess(username: str, password: str, regCode: str):
     :param regCode: 注册码
     """
     password = password_utils.encrypt_password(password)  # 加密密码
+    grade = await db_operation.RcodesTable_get_grade(regCode)  # 获取等级
+    if await db_operation.UsersTable_insert(
+        username, password, grade
+    ):  # 插入用户信息，如果插入成功
+        await db_operation.RcodesTable_update_times_sub_one(regCode)  # 注册码使用次数-1
 
 
-failed_count = 0  # 访问者错误次数
-
-
-async def isUseCapthca() -> bool:
+async def isUseCapthca(request: Request) -> bool:
     """
     判断是否使用验证码
     :return: 如果使用验证码，返回 True，否则返回 False
     """
-    global failed_count  # 全局变量
-    if failed_count >= 3:  # 如果错误次数大于等于 3
-        return True
-    return False  # 否则返回 False
+    client_host = request.client.host  # 获取客户端IP地址
+    user_agent = request.headers.get("User-Agent")  # 获取User-Agent请求头
+    faile_num = await db_operation.AccessLogTable_get_failnum(
+        client_host, user_agent
+    )  # 获取失败次数
+    if faile_num == -1 or faile_num >= 3:  # 如果失败次数为 -1 或者大于 3
+        return True  # 返回 True
+    return False  # 返回 False
 
 
 async def login_or_register_failed(request: Request):
@@ -116,16 +127,17 @@ async def login_or_register_failed(request: Request):
     """
     client_host = request.client.host  # 获取客户端IP地址
     user_agent = request.headers.get("User-Agent")  # 获取User-Agent请求头
-    global failed_count  # 全局变量
-    failed_count += 1  # 错误次数+1
-    pass
+    await db_operation.AccessLogTable_insert(client_host, user_agent)  # 插入日志
+    await db_operation.AccessLogTable_insert_ip(client_host)  # 插入日志
 
 
-async def login_or_register_success():
+async def login_or_register_success(request: Request):
     """
     登入或注册成功
     访问者错误次数清零
     """
-    global failed_count  # 全局变量
-    failed_count = 0  # 错误次数清零
-    pass
+    client_host = request.client.host  # 获取客户端IP地址
+    user_agent = request.headers.get("User-Agent")  # 获取User-Agent请求头
+    await db_operation.AccessLogTable_update_failnum_zero(
+        client_host, user_agent
+    )  # 更新失败次数为 0

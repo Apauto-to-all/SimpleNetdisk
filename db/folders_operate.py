@@ -1,5 +1,10 @@
 # 混入类，实现对文件夹表的操作
 # 实现对文件夹表的操作
+import logging
+import traceback
+
+# 获取日志记录器
+logger = logging.getLogger(__name__)
 
 
 class FolderOperate:
@@ -24,4 +29,7 @@ class FolderOperate:
                 )
                 return True if result else False
         except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
             return False

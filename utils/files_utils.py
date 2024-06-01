@@ -178,7 +178,7 @@ def rm_folder_password(username: str, folder_id: str) -> bool:
     return False
 
 
-def decrypt_folder_get_parent_folder_id(
+async def decrypt_folder_get_parent_folder_id(
     username: str, folder_id: str, password: str, is_temporary: bool
 ) -> str:
     """
@@ -191,7 +191,7 @@ def decrypt_folder_get_parent_folder_id(
     """
     if username and folder_id and password:
         hashed_password = get_folder_password(username, folder_id)
-        if password_utils.verify_password(hashed_password, password):
+        if await password_utils.verify_password(hashed_password, password):
             if not is_temporary:  # 删除密码，永久实现
                 rm_folder_password(username, folder_id)  # 删除文件夹密码
             return "/"

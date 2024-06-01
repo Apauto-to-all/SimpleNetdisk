@@ -1,5 +1,10 @@
 # 混合类
 # 等级表的操作
+import logging
+import traceback
+
+# 获取日志记录器
+logger = logging.getLogger(__name__)
 
 
 class GradesOperate:
@@ -18,4 +23,7 @@ class GradesOperate:
                 result = await connection.execute(sql, grade)
                 return True if result else False
         except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
             return False

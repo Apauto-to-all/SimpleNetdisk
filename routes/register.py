@@ -12,7 +12,7 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/register", response_class=HTMLResponse)
 async def register(request: Request):
     isUseCapthca = False
-    if await user_utils.isUseCapthca():  # 判断是否使用验证码
+    if await user_utils.isUseCapthca(request):  # 判断是否使用验证码
         isUseCapthca = True
     return await registerHtml(request, isUseCapthca=isUseCapthca)  # 返回注册页面
 
@@ -28,7 +28,7 @@ async def register(
     hashed_captcha: Optional[str] = Cookie(None),  # 获取加密后的验证码
 ):
     isUseCapthca = False
-    if await user_utils.isUseCapthca():  # 判断是否使用验证码
+    if await user_utils.isUseCapthca(request):  # 判断是否使用验证码
         isUseCapthca = True
         if not captcha:  # 判断验证码是否为空
             error_message = "验证码不能为空"
@@ -75,7 +75,9 @@ async def register(
             regCode,
             isUseCapthca=isUseCapthca,
         )
-    usernameFormat = user_utils.verify_get_username_format(username)  # 验证用户名格式
+    usernameFormat = await user_utils.verify_get_username_format(
+        username
+    )  # 验证用户名格式
     if usernameFormat:  # 如果用户名格式错误，这里的 usernameFormat 是用户名格式要求信息
         error_message = usernameFormat  # 错误信息，提示用户名格式
         return await registerHtml(
@@ -114,10 +116,10 @@ async def register(
             isUseCapthca=isUseCapthca,
         )
     # 注册成功
-    return await registerSuccess(username, password, regCode)
+    return await registerSuccess(username, password, regCode, request)
 
 
-async def registerSuccess(username, password, regCode):
+async def registerSuccess(username, password, regCode, request):
     """
     注册成功，将用户信息写入数据库，返回注册成功页面
     :param username: 用户名
@@ -129,7 +131,7 @@ async def registerSuccess(username, password, regCode):
     await user_utils.registerSuccess(
         username, password, regCode
     )  # 注册成功，写入数据库
-    await user_utils.login_or_register_success()  # 注册成功，访问者错误次数清零
+    await user_utils.login_or_register_success(request)  # 注册成功，访问者错误次数清零
     return RedirectResponse(url="/login", status_code=303)  # 重定向到登录页面
 
 

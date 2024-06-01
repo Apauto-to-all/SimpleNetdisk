@@ -27,7 +27,7 @@ async def index(
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
     unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
-    username = user_utils.isLogin_getUser(access_token)  # 从 JWT 中获取用户名
+    username = await user_utils.isLogin_getUser(access_token)  # 从 JWT 中获取用户名
     if not username:  # 判断是否登录
         return RedirectResponse(url="/login", status_code=303)
     if folder_id != "/" and not files_utils.verify_folder_is_user(
@@ -43,12 +43,12 @@ async def index(
     ):  # 判断文件夹是否被加密
         if not unlock_folder:
             return RedirectResponse(url="/index", status_code=303)
-        if not password_utils.verify_password(unlock_folder, username):
+        if not await password_utils.verify_password(unlock_folder, username):
             return RedirectResponse(url="/index", status_code=303)
 
     if unlock_folder:
         for i in all_dict.get("folders"):
-            if i.get("password") and password_utils.verify_password(
+            if i.get("password") and await password_utils.verify_password(
                 unlock_folder, i.get("uuid")
             ):  # 判断文件夹是否被加密，并且被解密
                 i["password"] = ""  # 解密文件夹
