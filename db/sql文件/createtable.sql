@@ -34,7 +34,7 @@ create domain KtimeDomain smallint;
 --创建Fid域，varchar类型，长度为36，用于文件(夹)id、父级文件夹id
 create domain FidDomain varchar(36);
 --创建Fname域，varchar类型，长度为50，文件夹名/文件名
-create domain FnameDomain varchar(50);
+create domain FnameDomain varchar(50)
    constraint Fname_not_null not null;
 --创建Fctime域，timestamp类型，文件夹创建时间/文件创建时间
 create domain FctimeDomain timestamp 
@@ -64,8 +64,8 @@ constraint IP_not_null not null;
 --密匙表相关域
 --创建Kid域，varchar类型，长度为1，密匙ID
 create domain KidDomain varchar(1) 
-CONSTRAINT Kid_constraint CHECK (LENGTH(value) = 1)
-DEFAULT 1;
+	CONSTRAINT Kid_constraint CHECK (LENGTH(value) = 1)
+	DEFAULT 1;
 --创建Key域，varchar类型，长度为64，密匙
 create domain KeyDomain varchar(64);
 
@@ -91,8 +91,9 @@ create table Users(
 --建立Rcodes表，注册码表
 create table Rcodes(
 	Rcode RcodeDomain primary key,
-	Cgrade GradeDomain,
-	Times TimesDomain
+	Grade GradeDomain,
+	Times TimesDomain,
+	foreign key (Grade) references Grades(Grade)
 );
 
 --建立Folders表,文件夹表
