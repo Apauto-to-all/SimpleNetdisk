@@ -91,7 +91,7 @@ create table Users(
 --建立Rcodes表，注册码表
 create table Rcodes(
 	Rcode RcodeDomain primary key,
-	Grade GradeDomain,
+	Cgrade GradeDomain,
 	Times TimesDomain,
 	foreign key (Grade) references Grades(Grade)
 );
