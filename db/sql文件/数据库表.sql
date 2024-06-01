@@ -71,55 +71,56 @@ create domain KeyDomain varchar(64);
 
 --等级表
 create table Grades(
-	Grade GradeDomain primary key,
-	Mspace CapacityDomain,
-	Mupfile CapacityDomain,
-	Ktime KtimeDomain
+	Grade GradeDomain primary key,--等级
+	Mspace CapacityDomain,--最大容量
+	Mupfile CapacityDomain,--最大上传文件大小
+	Ktime KtimeDomain--回收站保存时间
 );
 
 --用户表
 create table Users(
-	Uname UnameDomain primary key,
-	Passwd PasswdDomain,
-	Grade GradeDomain,
-	Uspace UspaceDomain,
-	Nname NnameDomain,
-	Hpath PathDomain,
+	Uname UnameDomain primary key,--用户名
+	Passwd PasswdDomain,--密码
+	Grade GradeDomain,--等级
+	Uspace UspaceDomain,--使用容量
+	Nname NnameDomain,--昵称
+	Hpath PathDomain,--头像路径
 	foreign key (Grade) references Grades(Grade)
+
 );
 
 --注册码表
 create table Rcodes(
-	Rcode RcodeDomain primary key,
-	Cgrade GradeDomain,
-	Times TimesDomain,
+	Rcode RcodeDomain primary key,--注册码
+	Grade GradeDomain,--对应等级
+	Times TimesDomain,--使用次数
 	foreign key (Grade) references Grades(Grade)
 );
 
 --文件夹表
 create table Folders(
-	Uname UnameDomain,
-	Foid FidDomain,
-	Faid FidDomain,
-	Foname FnameDomain,
-	Foctime FctimeDomain,
-	Foifdel ifDomain,
-	Relation PathDomain,
-	Fopasswd FopasswdDomain,
+	Uname UnameDomain,--用户名
+	Foid FidDomain,--文件夹id
+	Faid FidDomain,--父级文件夹id
+	Foname FnameDomain,--文件夹名
+	Foctime FctimeDomain,--文件夹创建时间
+	Foifdel ifDomain,--文件夹是否被删除
+	Relation PathDomain,--当前文件夹隶属：文件夹的层级关系
+	Fopasswd FopasswdDomain,--文件夹密码
 	primary key (Uname, Foid),
 	foreign key (Uname) references Users(Uname)
 );
 
 --文件表
 create table Files(
-	Uname UnameDomain,
-	Fid FidDomain,
-    Foid FidDomain,
-	Finame FnameDomain,
-	Fictime FctimeDomain,
-	Fifdel ifDomain,
-	FiKB CapacityDomain,
-	Fipath PathDomain,
+	Uname UnameDomain,--用户名
+	Fid FidDomain,--文件id
+    Foid FidDomain,--文件夹id
+	Finame FnameDomain,--文件名
+	Fictime FctimeDomain,--文件创建时间
+	Fifdel ifDomain,--文件是否被删除
+	FiKB CapacityDomain,--文件大小
+	Fipath PathDomain,--文件路径
 	primary key (Uname, Fid),
     foreign key (Uname, Foid) references Folders(Uname, Foid),
     foreign key (Uname) references Users(Uname)
@@ -127,11 +128,11 @@ create table Files(
 
 --垃圾桶表
 create table Trash(
-	Uname UnameDomain,
-	Fid FidDomain,
-	ForFi ifDomain,
-	Ptime timeDomain,
-	Fideltime timeDomain,
+	Uname UnameDomain,--用户名
+	Fid FidDomain,--文件id
+	ForFi ifDomain,--文件还是文件夹
+	Ptime timeDomain,--放入回收站时间
+	Fideltime timeDomain,--文件删除时间
 	primary key (Uname, Fid),
 	foreign key (Uname) references Users(Uname),
 	foreign key (Uname, Fid) references Files(Uname, Fid)
@@ -139,21 +140,21 @@ create table Trash(
 
 --缩略图表
 create table Shrink(
-	Fitype FitypeDomain primary key,
-	Spath PathDomain
+	Fitype FitypeDomain primary key,--文件类型
+	Spath PathDomain --缩略图路径
 );
 
 --访问日志表
 create table Accesslog(
-	IP IPDomain,
-	Rheader PathDomain,
-	Failnum TimesDomain,
+	IP IPDomain,--IP
+	Rheader PathDomain,--请求头
+	Failnum TimesDomain,--登入失败次数
 	primary key (IP, Rheader)
 );
 
 --密匙表
 create table Keys(
-	Kid KidDomain primary key,
-	Key KeyDomain,
-	Todate timeDomain
+	Kid KidDomain primary key,--密匙id
+	Key KeyDomain,--密匙
+	Todate timeDomain--到期时间
 );
