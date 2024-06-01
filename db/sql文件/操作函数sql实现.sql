@@ -10,9 +10,10 @@ from Users
 where Uname = $1;
 
 --附加等级表，获取信息
-select Hpath,Nname,Mspace,Mupfile
-from Grade
-where Uname = $1;
+SELECT Users.Hpath, Users.Nname, Grades.Mspace, Users.Uspace
+FROM Users,Grades
+WHERE Users.Grade = Grades.Grade
+AND Users.Uname = $1;
 
 --更新 用户名对应的头像路径，昵称
 UPDATE Users

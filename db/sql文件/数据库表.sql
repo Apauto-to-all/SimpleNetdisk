@@ -86,7 +86,6 @@ create table Users(
 	Nname NnameDomain,--昵称
 	Hpath PathDomain,--头像路径
 	foreign key (Grade) references Grades(Grade)
-
 );
 
 --注册码表
