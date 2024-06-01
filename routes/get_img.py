@@ -11,12 +11,12 @@ router = APIRouter()
 
 @router.get("/user/avatar")  # 获取用户头像
 async def get_avatar(access_token: Optional[str] = Cookie(None)):
-    username = user_utils.isLogin_getUser(access_token)  # 从 JWT 中获取用户名
+    username = await user_utils.isLogin_getUser(access_token)  # 从 JWT 中获取用户名
     if username:  # 判断用户名是否存在
         img_path = f"{config.user_avatar_path}/{username}.jpg"  # 头像路径
-        with open(img_path, "rb") as f:
-            img_data = f.read()  # 读取头像
-        return Response(content=img_data, media_type="image/jpeg")  # 返回头像
+        if not os.path.exists(img_path):  # 判断头像是否存在
+            img_path = f"{config.user_avatar_path}/default.jpg"  # 默认头像路径
+        return FileResponse(img_path)  # 返回头像
 
 
 @router.get("/thumbnail/{file_type}")  # 获取缩略图

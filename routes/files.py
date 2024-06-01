@@ -18,14 +18,14 @@ async def download_file(
     unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
     # 判断是否登录
-    username = user_utils.isLogin_getUser(access_token)
+    username = await user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
     lock_folder_id = files_utils.get_parent_folder_id_is_locked(username, file_id)
     if lock_folder_id:  # 文件的父类文件夹被加密
         if not unlock_folder:
             return {"error": "文件所属的文件夹被加密，请先解密再使用"}
-        if not password_utils.verify_password(unlock_folder, lock_folder_id):
+        if not await password_utils.verify_password(unlock_folder, lock_folder_id):
             return {"error": "文件所属的文件夹未解密，请先解密再使用"}
     file_dict = files_utils.verify_and_return_files_info(username, file_id)
     if not file_dict:
@@ -50,14 +50,14 @@ async def upload_file(
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
     unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
-    username = user_utils.isLogin_getUser(access_token)
+    username = await user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
     if folder_id and files:  # 上传文件
         if files_utils.is_folder_encrypted(username, folder_id):  # 文件夹被加密
             if not unlock_folder:
                 return {"error": "文件夹被加密，请先解密再使用"}
-            if not password_utils.verify_password(unlock_folder, folder_id):
+            if not await password_utils.verify_password(unlock_folder, folder_id):
                 return {"error": "该文件夹未解密，请先解密再使用"}
 
         for file in files:  # 遍历上传的文件
@@ -89,7 +89,7 @@ async def delete_file_folder(
     unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
     # 判断是否登录
-    username = user_utils.isLogin_getUser(access_token)
+    username = await user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
     if file_id and not folder_id:  # 删除文件
@@ -97,7 +97,7 @@ async def delete_file_folder(
         if lock_folder_id:  # 文件的父类文件夹被加密
             if not unlock_folder:
                 return {"error": "文件所属的文件夹被加密，请先解密再使用"}
-            if not password_utils.verify_password(unlock_folder, lock_folder_id):
+            if not await password_utils.verify_password(unlock_folder, lock_folder_id):
                 return {"error": "文件所属的文件夹未解密，请先解密再使用"}
         # 获取被删除文件的父级文件夹id
         parent_folder_id = files_utils.delete_file_get_parent_folder_id(
@@ -109,7 +109,7 @@ async def delete_file_folder(
         if files_utils.is_folder_encrypted(username, folder_id):  # 文件夹被加密
             if not unlock_folder:
                 return {"error": "文件夹被加密，请先解密再使用"}
-            if not password_utils.verify_password(unlock_folder, folder_id):
+            if not await password_utils.verify_password(unlock_folder, folder_id):
                 return {"error": "该文件夹未解密，请先解密再使用"}
         parent_folder_id = files_utils.delete_folder_get_parent_folder_id(
             username, folder_id
@@ -131,7 +131,7 @@ async def rename_file(
     unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
     # 判断是否登录
-    username = user_utils.isLogin_getUser(access_token)
+    username = await user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
     if file_id and new_file_name:  # 重命名文件
@@ -139,7 +139,7 @@ async def rename_file(
         if lock_folder_id:  # 文件的父类文件夹被加密
             if not unlock_folder:
                 return {"error": "文件所属的文件夹被加密，请先解密再使用"}
-            if not password_utils.verify_password(unlock_folder, lock_folder_id):
+            if not await password_utils.verify_password(unlock_folder, lock_folder_id):
                 return {"error": "文件所属的文件夹未解密，请先解密再使用"}
         parent_folder_id = files_utils.rename_file_get_parent_folder_id(
             username,
@@ -152,7 +152,7 @@ async def rename_file(
         if files_utils.is_folder_encrypted(username, file_id):  # 文件夹被加密
             if not unlock_folder:
                 return {"error": "文件夹被加密，请先解密再使用"}
-            if not password_utils.verify_password(unlock_folder, file_id):
+            if not await password_utils.verify_password(unlock_folder, file_id):
                 return {"error": "该文件夹未解密，请先解密再使用"}
         parent_folder_id = files_utils.rename_folder_get_parent_folder_id(
             username,
@@ -173,7 +173,7 @@ async def encrypt_folder(
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
 ):
     # 判断是否登录
-    username = user_utils.isLogin_getUser(access_token)
+    username = await user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
     if folder_id and password:
@@ -198,11 +198,11 @@ async def decrypt_folder(
 ):
     print(folder_id, password, is_temporary)
     # 判断是否登录
-    username = user_utils.isLogin_getUser(access_token)
+    username = await user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
     if folder_id and password:  # 解密文件夹
-        parent_folder_id = files_utils.decrypt_folder_get_parent_folder_id(
+        parent_folder_id = await files_utils.decrypt_folder_get_parent_folder_id(
             username,
             folder_id,
             password,
@@ -229,7 +229,7 @@ async def create_folder(
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
 ):
     # 判断是否登录
-    username = user_utils.isLogin_getUser(access_token)
+    username = await user_utils.isLogin_getUser(access_token)
     if not username:
         return {"error": "未登录"}
     if folder_id and folder_name:  # 创建文件夹

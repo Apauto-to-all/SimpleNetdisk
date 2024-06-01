@@ -23,11 +23,11 @@ async def login(
     request: Request,  # 用于接收请求
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
 ):
-    if user_utils.isLogin_getUser(access_token):  # 判断是否登录
+    if await user_utils.isLogin_getUser(access_token):  # 判断是否登录
         return RedirectResponse(url="/index", status_code=303)
 
     isUseCapthca = False  # 是否使用验证码，默认为 False
-    if await user_utils.isUseCapthca():  # 判断是否使用验证码
+    if await user_utils.isUseCapthca(request):  # 判断是否使用验证码
         isUseCapthca = True  # 使用验证码
     return await loginHtml(request, isUseCapthca=isUseCapthca)
 
@@ -41,7 +41,7 @@ async def login(
     hashed_captcha: Optional[str] = Cookie(None),  # 获取加密后的验证码
 ):
     isUseCapthca = False
-    if await user_utils.isUseCapthca():  # 判断是否使用验证码
+    if await user_utils.isUseCapthca(request):  # 判断是否使用验证码
         isUseCapthca = True
         if not captcha:
             error_message = "验证码不能为空"
@@ -69,24 +69,24 @@ async def login(
         )
 
     if await user_utils.verifyLogin(username, password):  # 验证登录
-        return await loginSuccess(username)  # 登录成功
+        return await loginSuccess(username, request)  # 登录成功
     error_message = "用户名或密码错误"
     return await loginHtml(request, error_message, username, isUseCapthca=isUseCapthca)
 
 
-async def loginSuccess(username):
+async def loginSuccess(username, request):
     """
     登录成功后的操作
     :param username: 用户名
     :param password: 密码
     :return: 登录成功后的响应
     """
-    await user_utils.login_or_register_success()  # 登录成功，访问者错误次数清零
+    await user_utils.login_or_register_success(request)  # 登录成功，访问者错误次数清零
     # 控制登入成功后的跳转，并设置 Cookie
     response = RedirectResponse(url="/index", status_code=303)  # 重定向到首页
     response.set_cookie(
         key="access_token",  # 设置 Cookie 的键
-        value=user_utils.get_token(username),  # 设置 Cookie 的值
+        value=await user_utils.get_token(username),  # 设置 Cookie 的值
         max_age=60 * config.login_time,  # 设置 Cookie 有效期为 config.login_time 分钟
     )
     return response

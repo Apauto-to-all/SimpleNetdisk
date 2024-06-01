@@ -1,3 +1,8 @@
+from datetime import datetime
+import logging
+from logging.handlers import TimedRotatingFileHandler
+import sys
+
 # 全局配置文件
 
 # 项目运行的主机和端口
@@ -35,6 +40,48 @@ thumbnail_path = "files/thumbnails"
 folder_lock_path = "files/lock"
 # 用户文件存放路径
 user_files_path = "files/files_all"
+# 用户文件夹路径
+log_path = "log"
+
+
+# 日志
+current_date = datetime.now().strftime("%Y-%m-%d")  # 获取当前的日期
+
+
+# 创建一个handler，用于写入日志文件，每天创建一个新的日志文件，保留30天的日志文件
+def setup_logger():
+    # 创建一个logger
+    logger = logging.getLogger()  # 获取日志记录器
+    logger.setLevel(logging.DEBUG)  # 设置日志记录器的级别
+
+    # 创建一个handler，用于写入日志文件，每天创建一个新的日志文件，保留30天的日志文件
+    fh = TimedRotatingFileHandler(
+        f"{log_path}/{current_date}.log",  # 日志文件名
+        when="midnight",  # 每天创建一个新的日志文件
+        interval=1,  # 每天创建一个新的日志文件
+        backupCount=30,  # 保留30天的日志文件
+        encoding="utf-8",  # 日志文件编码
+    )
+    fh.setLevel(logging.DEBUG)
+
+    # # 再创建一个handler，用于输出到控制台
+    # ch = logging.StreamHandler(sys.stdout)  # 输出到控制台
+    # ch.setLevel(logging.DEBUG)  # 输出到控制台
+
+    # 定义handler的输出格式
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    fh.setFormatter(formatter)
+    # ch.setFormatter(formatter)  # 输出到控制台
+
+    # 给logger添加handler
+    logger.addHandler(fh)
+    # logger.addHandler(ch)  # 输出到控制台
+
+
+setup_logger()
+
 
 # 测试前缀
 isTest = True  # 是否为测试模式
