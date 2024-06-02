@@ -117,23 +117,49 @@ class UsersOperate:
         :return: 返回用户的所有信息
         """
         sql = """
-        SELECT Nname, Hpath, Uspace, Mspace
-        FROM (
-            SELECT Grade
-            FROM Users
-            WHERE Uname = $1
-        ) AS UserGrade
-        INNER JOIN Grades ON UserGrade.Grade = Grades.Grade;
+        SELECT Nname, Uspace, Mspace
+        FROM Users
+        INNER JOIN Grades ON Users.Grade = Grades.Grade
+        WHERE Uname = $1;
         """
         try:
             async with self.pool.acquire() as connection:
                 result = await connection.fetch(sql, username)
-                return result[0]
+                dict = {}
+                if result:
+                    dict["nickname"] = result[0].get("nname")
+                    dict["capacity_used"] = result[0].get("uspace")
+                    dict["capacity_total"] = result[0].get("mspace")
+                return dict
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)
             logger.error(e)
             return {}
+
+    # 查询头像路径
+    async def UsersTable_select_hpath(self, username: str) -> str:
+        """
+        查询头像路径
+        :param username: 用户名
+        :return: 返回头像路径
+        """
+        sql = """
+        select Hpath
+        from Users
+        where Uname = $1;
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.fetch(sql, username)
+                if result:
+                    return result[0].get("hpath")
+                return ""
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return ""
 
 
 """

@@ -20,33 +20,92 @@
     <!-- 2. 用户昵称 -->
     <p class="user-info" id="nickname"> {{ all_user.nickname }}</p>
     <!-- 3. 用户容量 -->
-    <p class="capacity-info" id="capacity_total">总容量: {{ all_user.capacity.total }}</p>
-    <p class="capacity-info" id="capacity_used">已用容量: {{ all_user.capacity.used }}</p>
-    <p class="capacity-info" id="capacity_percent">已用百分比: {{ all_user.capacity.percent }}</p>
+    <p class="capacity-info" id="capacity_total">总容量: {{ all_user.capacity_total }}</p>
+    <p class="capacity-info" id="capacity_used">已用容量: {{ all_user.capacity_used }}</p>
+    <p class="capacity-info" id="capacity_percent">已用百分比: {{ all_user.capacity_percent }}</p>
     <!-- 显示用户信息，结束 -->
 
     <!-- 批量操作 -->
     <h2>批量操作</h2>
-    <a> 批量下载</a>
-    <a> 批量移动</a>
-    <a> 批量删除</a>
+    <button id="downloadButton" onclick="download()">批量下载</button>
+    <button id="moveButton">批量移动</button>
+    <button id="copyButton">批量复制</button>
+    <button id="deleteButton">批量删除</button>
+    <script>
+        // 批量下载
+        function downloadALL() {
+            var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
+            for (var i = 0; i < checkboxes.length; i++) {
+                // 批量下载，发送get请求
+                fetch('/download?file_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+            }
+        }
+
+        // 批量删除
+        function deleteAll() {
+            var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
+            for (var i = 0; i < checkboxes.length; i++) {
+                // 批量删除，发送get请求
+                fetch('/delete_file?file_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+            }
+            var checkboxes = document.querySelectorAll('input[type=checkbox].folder:checked');
+            for (var i = 0; i < checkboxes.length; i++) {
+                // 批量删除，发送get请求
+                fetch('/delete?folder_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+            }
+        }
+    </script>
     <!-- 批量操作，结束 -->
 
     <!-- 显示父类文件路径 -->
     <h2>父级文件夹的路径</h2>
     <ul>
         <a class="path-info" id="/" href="/index">主页面</a>
+        {% if all_dict.get('folders_path') %}
         {% for uuid, name in all_dict.folders_path.items() %}
         <a class="path-info" id="{{ uuid }}" href="/index/{{ uuid }}">{{ name }}</a>
         {% endfor %}
         <a class="path-info" id="{{ folder_id }}">当前文件夹</a>
+        {% endif %}
     </ul>
     <!-- 实现文件夹显示，结束 -->
 
+    <!-- 详细信息 -->
+    <h2>详细信息</h2>
+    <input type="checkbox" id="chkall" onclick="chk_all()">
+    <a>|</a>
+    <a>文件名</a>
+    <a>|</a>
+    <a>创建时间</a>
+    <a>|</a>
+    <a>文件大小</a>
+    <script>
+        function chk_all() {
+            var chkall = document.getElementById('chkall').checked;
+            var checkboxes = document.querySelectorAll('input[type=checkbox]');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = chkall;
+            }
+        }
+        function chk_single() {
+            var checkboxes = document.querySelectorAll('input[type=checkbox].checkboxItem');
+            var allChecked = true;
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (!checkboxes[i].checked) {
+                    allChecked = false;
+                    break;
+                }
+            }
+            document.getElementById('chkall').checked = allChecked;
+        }
+    </script>
+
     <!-- 实现文件夹显示 -->
     <h2>文件夹</h2>
+    {% if all_dict.folders %}
     {% for folder_item in all_dict.folders %}
     <div type="folder" class="folder">
+        <input type="checkbox" class="checkboxItem folder" id="{{ folder_item.uuid }}" onclick="chk_single()">
         <img src="/thumbnail/folder" alt="folder">
         <a href="/index/{{ folder_item.uuid }}">{{ folder_item.name }}</a>
         <a id="time">{{ folder_item.time }}</a>
@@ -125,12 +184,15 @@
 
     </div>
     {% endfor %}
+    {% endif %}
     <!-- 文件夹显示结束 -->
 
     <!--实现文件显示 -->
     <h2>文件</h2>
+    {% if all_dict.files %}
     {% for file_item in all_dict.files %}
     <div type="file" class="file">
+        <input type="checkbox" class="checkboxItem file" id="{{ file_item.uuid }}" onclick=" chk_single()">
         <img src="/thumbnail/{{ file_item.type }}" alt="file">
         <a id="{{ file_item.uuid }}">{{ file_item.name }}</a>
         <a id="time">{{ file_item.time }}</a>
@@ -159,6 +221,7 @@
         }
     </script>
     {% endfor %}
+    {% endif %}
     <!-- 文件显示结束 -->
 
     <!-- 创建文件夹 -->

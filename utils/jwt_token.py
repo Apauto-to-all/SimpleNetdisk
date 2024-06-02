@@ -17,7 +17,7 @@ async def get_access_jwt(user: str) -> str:
     """
     SECRET_KEY = await db_operation.KeyTable_get_key()  # 获取密匙
     payload = {
-        "jti": get_uuid(),  # JWT ID
+        "jti": await get_uuid(),  # JWT ID
         "user": user,
         "exp": datetime.now(timezone.utc)
         + timedelta(minutes=config.login_time),  # 使用带有UTC时区信息的datetime对象

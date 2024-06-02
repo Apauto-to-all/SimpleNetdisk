@@ -23,7 +23,8 @@ async def get_avatar(access_token: Optional[str] = Cookie(None)):
 async def get_thumbnail(file_type: str):
     if file_type == "folder":  # 判断文件类型是否为文件夹
         return FileResponse(f"{config.thumbnail_path}/default/folder.png")
-
+    if file_type == "unknown":  # 判断文件类型是否为未知文件
+        return FileResponse(f"{config.thumbnail_path}/default/unknown.png")
     img_path = f"{config.thumbnail_path}/default/{file_type}.png"  # 缩略图路径
     if os.path.exists(img_path):  # 判断缩略图是否存在
         return FileResponse(img_path)  # 返回缩略图

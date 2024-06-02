@@ -2,33 +2,49 @@
 import os
 from utils import password_utils, uuid_utils
 import config
+from db.connection import DatabaseOperation  # 导入数据库操作类
+
+db_operation = DatabaseOperation()  # 实例化数据库操作类
 
 
-def verify_folder_is_user(username: str, folder_id: str) -> bool:
+async def is_folder_has_folder(username: str, folder_id: str) -> bool:
+    """
+    验证文件夹是否有文件夹
+    :param username: 用户名
+    :param folder_id: 文件夹id
+    :return: 是否有文件夹
+    """
+    if username and folder_id:
+        return await db_operation.FolderTable_has_folder(username, folder_id)
+    return False
+
+
+async def verify_folder_is_user(username: str, folder_id: str) -> bool:
     """
     验证文件夹id是否为用户的文件夹
     :param username: 用户名
     :param folder_id: 文件夹id
     :return: 是否为用户的文件夹
     """
-    if username and folder_id:
+    if await db_operation.FolderTable_verify(username, folder_id):
         return True
+    return False
 
 
-def verify_file_is_user(username: str, file_id: str) -> bool:
+async def verify_file_is_user(username: str, file_id: str) -> bool:
     """
     验证文件id是否为用户的文件
     :param username: 用户名
     :param file_id: 文件id
     :return: 是否为用户的文件
     """
-    if username == "admin" and file_id == "aaa":
-        return True
+    if username and file_id:
+        return await db_operation.FileTable_verify(username, file_id)
     return False
 
 
 # 验证并放回文件信息
-def verify_and_return_files_info(username: str, file_id: str) -> dict:
+async def verify_and_return_files_info(username: str, file_id: str) -> dict:
     """
     验证并返回文件信息
     :param username: 用户名
@@ -36,12 +52,7 @@ def verify_and_return_files_info(username: str, file_id: str) -> dict:
     :return: 文件路径，文件名
     """
     if username and file_id:
-        file_path = "f1/1.jpg"
-        file_name = "图片.jpg"
-        return {
-            "file_path": file_path,
-            "file_name": file_name,
-        }
+        return await db_operation.FileTable_get_name_path(username, file_id)
     return {}
 
 
@@ -74,7 +85,7 @@ def get_folders_in_folder(username: str, folder_id: str) -> list:
 
 
 # 删除文件，获取父级文件夹id
-def delete_file_get_parent_folder_id(username: str, file_id: str) -> str:
+async def delete_file_get_parent_folder_id(username: str, file_id: str) -> str:
     """
     删除文件
     :param username: 用户名
@@ -82,12 +93,14 @@ def delete_file_get_parent_folder_id(username: str, file_id: str) -> str:
     :return: 父级文件夹id
     """
     if username and file_id:
-        return "/"
+        return await db_operation.FileTable_delete_get_parent_folder_id(
+            username, file_id
+        )
     return ""  # 删除失败
 
 
 # 删除文件夹，获取父级文件夹id
-def delete_folder_get_parent_folder_id(username: str, folder_id: str) -> str:
+async def delete_folder_get_parent_folder_id(username: str, folder_id: str) -> str:
     """
     删除文件夹
     :param username: 用户名
@@ -95,7 +108,8 @@ def delete_folder_get_parent_folder_id(username: str, folder_id: str) -> str:
     :return: 父级文件夹id
     """
     if username and folder_id:
-        return "/"
+        await db_operation.FolderTable_delete(username, folder_id)
+        return await db_operation.FolderTable_get_parent_folder_id(username, folder_id)
     return ""  # 删除失败
 
 
@@ -112,7 +126,7 @@ def get_parent_folder_id(username: str, folder_id: str) -> str:
     return ""  # 删除失败
 
 
-def rename_file_get_parent_folder_id(
+async def rename_file_get_parent_folder_id(
     username: str, file_id: str, new_file_name: str
 ) -> str:
     """
@@ -123,11 +137,13 @@ def rename_file_get_parent_folder_id(
     :return: 父级文件夹id
     """
     if username and file_id and new_file_name:
-        return "/"
+        return await db_operation.FileTable_rename_file_get_parent_folder_id(
+            username, file_id, new_file_name
+        )
     return ""  # 重命名失败
 
 
-def rename_folder_get_parent_folder_id(
+async def rename_folder_get_parent_folder_id(
     username: str, folder_id: str, new_folder_name: str
 ) -> str:
     """
@@ -138,7 +154,10 @@ def rename_folder_get_parent_folder_id(
     :return: 父级文件夹id
     """
     if username and folder_id and new_folder_name:
-        return "/"
+        await db_operation.FolderTable_rename_folder(
+            username, folder_id, new_folder_name
+        )
+        return await db_operation.FolderTable_get_parent_folder_id(username, folder_id)
     return ""  # 重命名失败
 
 
@@ -154,28 +173,9 @@ async def encrypt_folder_get_parent_folder_id(
     """
     if username and folder_id and password:
         password = await password_utils.encrypt_password(password)
-        return "/"
+        await db_operation.FolderTable_encrypt_folder(username, folder_id, password)
+        return await db_operation.FolderTable_get_parent_folder_id(username, folder_id)
     return ""  # 加密失败
-
-
-def get_folder_password(username: str, folder_id: str) -> str:
-    if username and folder_id:
-        return (
-            "$2b$12$RnKEz5vMMQW6zZ1/1fNntesE3dF88VDXHXa9XA4Mx7V6Ik.loMd0S"  # password
-        )
-    return ""  # 获取密码失败
-
-
-def rm_folder_password(username: str, folder_id: str) -> bool:
-    """
-    删除文件夹密码
-    :param username: 用户名
-    :param folder_id: 文件夹id
-    :return 如何删除密码成功就返回Treu，否则False
-    """
-    if username and folder_id:
-        return True
-    return False
 
 
 async def decrypt_folder_get_parent_folder_id(
@@ -190,15 +190,19 @@ async def decrypt_folder_get_parent_folder_id(
     :return: 父级文件夹id
     """
     if username and folder_id and password:
-        hashed_password = get_folder_password(username, folder_id)
+        hashed_password = await db_operation.FolderTable_get_password(
+            username, folder_id
+        )
         if await password_utils.verify_password(hashed_password, password):
             if not is_temporary:  # 删除密码，永久实现
-                rm_folder_password(username, folder_id)  # 删除文件夹密码
-            return "/"
+                await db_operation.FolderTable_delete_password(username, folder_id)
+            return await db_operation.FolderTable_get_parent_folder_id(
+                username, folder_id
+            )
     return ""  # 解密失败
 
 
-def is_folder_encrypted(username: str, folder_id: str) -> bool:
+async def is_folder_encrypted(username: str, folder_id: str) -> bool:
     """
     判断文件夹是否加密
     :param username: 用户名
@@ -206,11 +210,15 @@ def is_folder_encrypted(username: str, folder_id: str) -> bool:
     :return: 是否加密，True 为加密，False 为未加密
     """
     if username and folder_id:
-        return False
+        return (
+            True
+            if await db_operation.FolderTable_get_password(username, folder_id)
+            else False
+        )
     return True
 
 
-def get_parent_folder_id_is_locked(username: str, file_id: str) -> str:
+async def get_parent_folder_id_is_locked(username: str, file_id: str) -> str:
     """
     如果文件的父级文件夹被加密，返回父级文件夹id，否则返回空字符串
     :param username: 用户名
@@ -218,11 +226,13 @@ def get_parent_folder_id_is_locked(username: str, file_id: str) -> str:
     :return: 父级文件夹id
     """
     if username and file_id:
-        return "/"
+        return await db_operation.FileTable_get_lock_parent_folder_id(username, file_id)
     return ""  # 获取失败
 
 
-def create_folder_get_folder_id(username: str, folder_id: str, folder_name: str) -> str:
+async def create_folder_get_folder_id(
+    username: str, folder_id: str, folder_name: str
+) -> str:
     """
     创建文件夹
     :param username: 用户名
@@ -231,12 +241,17 @@ def create_folder_get_folder_id(username: str, folder_id: str, folder_name: str)
     :return: 文件夹id
     """
     if username and folder_id and folder_name:
-        new_folder_id = uuid_utils.get_uuid()
+        new_folder_id = await uuid_utils.get_uuid()
+        while await verify_folder_is_user(username, new_folder_id):
+            new_folder_id = await uuid_utils.get_uuid()
+        await db_operation.FolderTable_insert(
+            username, new_folder_id, folder_id, folder_name
+        )
         return new_folder_id
     return ""  # 创建失败
 
 
-def get_file_path(username: str) -> str:
+async def get_file_path(username: str) -> str:
     """
     获取用户的文件路径
     :param username: 用户名
@@ -250,7 +265,9 @@ def get_file_path(username: str) -> str:
     return ""  # 获取失败
 
 
-def save_file_get_file_id(username: str, file_name: str, file_size_kb: str) -> str:
+async def save_file_get_file_id(
+    username: str, file_name: str, file_size_kb: str, parent_folder: str
+) -> str:
     """
     保存文件
     :param username: 用户名
@@ -259,11 +276,11 @@ def save_file_get_file_id(username: str, file_name: str, file_size_kb: str) -> s
     :return: 文件id
     """
     if username and file_name and file_size_kb:  # 保存文件
-        new_file_id = uuid_utils.get_uuid()  # 生成文件id
-        while verify_file_is_user(
+        new_file_id = await uuid_utils.get_uuid()  # 生成文件id
+        while await verify_file_is_user(
             username, new_file_id
         ):  # 如果文件id已经存在，重新生成，直到文件id不存在
-            new_file_id = uuid_utils.get_uuid()
+            new_file_id = await uuid_utils.get_uuid()
 
         user_all_file_path = os.path.join(
             config.user_files_path, username
@@ -273,5 +290,13 @@ def save_file_get_file_id(username: str, file_name: str, file_size_kb: str) -> s
 
         file_path = os.path.join(user_all_file_path, new_file_id)
         if username and file_name and file_path and file_size_kb:  # 保存文件
+            await db_operation.FileTable_insert(
+                username,
+                new_file_id,
+                parent_folder,
+                file_name,
+                file_size_kb,
+                file_path,
+            )
             return new_file_id
     return ""  # 保存失败
