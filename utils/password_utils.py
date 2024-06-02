@@ -1,7 +1,7 @@
 import bcrypt  # 导入bcrypt库，用于密码加密
 
 
-def encrypt_password(password: str) -> str:
+async def encrypt_password(password: str) -> str:
     """
     :param password: 密码
     :return: 返回加密后的密码

@@ -11,7 +11,7 @@ async def isLogin_getUser(access_token: str) -> str:
     :param access_token: JWT Token
     :return: 如果用户登录，返回用户名，否则返回空字符串
     """
-    return jwt_token.get_user_from_jwt(access_token)  # 从 JWT 中获取用户名
+    return await jwt_token.get_user_from_jwt(access_token)  # 从 JWT 中获取用户名
 
 
 async def get_token(user: str) -> str:
@@ -20,7 +20,7 @@ async def get_token(user: str) -> str:
     :param user: 用户名
     :return: JWT Token
     """
-    return jwt_token.get_access_jwt(user)  # 生成 JWT Token
+    return await jwt_token.get_access_jwt(user)  # 生成 JWT Token
 
 
 async def verify_get_username_format(username: str) -> str:
@@ -97,7 +97,7 @@ async def registerSuccess(username: str, password: str, regCode: str):
     :param password: 密码
     :param regCode: 注册码
     """
-    password = password_utils.encrypt_password(password)  # 加密密码
+    password = await password_utils.encrypt_password(password)  # 加密密码
     grade = await db_operation.RcodesTable_get_grade(regCode)  # 获取等级
     if await db_operation.UsersTable_insert(
         username, password, grade
@@ -115,7 +115,7 @@ async def isUseCapthca(request: Request) -> bool:
     faile_num = await db_operation.AccessLogTable_get_failnum(
         client_host, user_agent
     )  # 获取失败次数
-    if faile_num == -1 or faile_num >= 3:  # 如果失败次数为 -1 或者大于 3
+    if faile_num >= 3:  # 如果失败次数大于等于 3
         return True  # 返回 True
     return False  # 返回 False
 

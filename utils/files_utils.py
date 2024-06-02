@@ -142,7 +142,7 @@ def rename_folder_get_parent_folder_id(
     return ""  # 重命名失败
 
 
-def encrypt_folder_get_parent_folder_id(
+async def encrypt_folder_get_parent_folder_id(
     username: str, folder_id: str, password: str
 ) -> str:
     """
@@ -153,7 +153,7 @@ def encrypt_folder_get_parent_folder_id(
     :return: 父级文件夹id
     """
     if username and folder_id and password:
-        password = password_utils.encrypt_password(password)
+        password = await password_utils.encrypt_password(password)
         return "/"
     return ""  # 加密失败
 

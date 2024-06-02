@@ -2,6 +2,7 @@
 # 实现ip+请求头日志记录
 import logging
 import traceback
+import asyncpg
 
 # 获取日志记录器
 logger = logging.getLogger(__name__)
@@ -68,7 +69,9 @@ class AccessLogOperate:
         try:
             async with self.pool.acquire() as connection:
                 result = await connection.fetch(sql, ip, headers)
-                return result[0].get("failnum")
+                if not result:
+                    return 0
+                return int(result[0].get("failnum"))
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)
@@ -92,6 +95,25 @@ class AccessLogOperate:
         try:
             async with self.pool.acquire() as connection:
                 result = await connection.execute(sql, ip, headers)
+                return True if result else False
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return False
+
+    # 清空日志表
+    async def AccessLogTable_truncate(self) -> bool:
+        """
+        清空日志表
+        :return: 如果清空成功就返回 True，否则返回 False
+        """
+        sql = """
+        truncate table Accesslog;
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.execute(sql)
                 return True if result else False
         except Exception as e:
             error_info = traceback.format_exc()

@@ -1,3 +1,4 @@
+import sys
 import traceback
 import asyncpg  # 导入 asyncpg 模块，用于异步访问 PostgreSQL 数据库
 from db.folders_operate import FolderOperate  # 导入文件夹操作类
@@ -69,29 +70,9 @@ class DatabaseOperation(
             logger.error(e)
             if self.error_mun <= 3:
                 await self.connectPool()  # 如果连接数据库失败，就重新连接
-
-    # 创建表
-    async def createTable(self):
-        """
-        创建表
-        :return: 如果创建表成功就返回 True，否则返回 False
-        """
-        sql = """
-        CREATE TABLE users(
-            username VARCHAR(255),
-            password VARCHAR(255),
-            PRIMARY KEY(username)
-        )
-        """
-        try:
-            async with self.pool.acquire() as connection:
-                result = await connection.execute(sql)
-                return True if result else False
-        except Exception as e:  # 如果创建表失败
-            error_info = traceback.format_exc()
-            logger.error(error_info)
-            logger.error(e)
-            return False
+            else:
+                logger.error("数据库连接失败，程序退出")
+                sys.exit()
 
     # 关闭数据库连接
     async def close(self):

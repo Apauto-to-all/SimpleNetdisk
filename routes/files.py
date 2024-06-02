@@ -177,7 +177,7 @@ async def encrypt_folder(
     if not username:
         return {"error": "未登录"}
     if folder_id and password:
-        parent_folder_id = files_utils.encrypt_folder_get_parent_folder_id(
+        parent_folder_id = await files_utils.encrypt_folder_get_parent_folder_id(
             username,
             folder_id,
             password,
@@ -196,7 +196,6 @@ async def decrypt_folder(
     is_temporary: Optional[bool] = Form(False),  # 读取表单数据
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
 ):
-    print(folder_id, password, is_temporary)
     # 判断是否登录
     username = await user_utils.isLogin_getUser(access_token)
     if not username:
@@ -215,7 +214,7 @@ async def decrypt_folder(
             if is_temporary:
                 response.set_cookie(
                     key=f"unlock_folder",
-                    value=password_utils.encrypt_password(folder_id),
+                    value=await password_utils.encrypt_password(folder_id),
                 )
             return response
     return {"error": "解密失败"}

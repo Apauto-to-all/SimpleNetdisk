@@ -1,40 +1,23 @@
-import uuid
+from utils.uuid_utils import get_uuid  # 导入生成UUID的方法
 import jwt  # 导入jwt模块
 from datetime import datetime, timedelta, timezone
-import secrets  # 导入secrets模块，用于生成随机密钥
+
 import config  # 导入配置文件
+from db.connection import DatabaseOperation  # 导入数据库操作类
 
 ALGORITHM = "HS256"  # 加密算法
+db_operation = DatabaseOperation()
 
 
-def create_secret_key():
-    """
-    创建并储存密钥，无返回值
-    """
-    SECRET_KEY = secrets.token_hex(32)  # 生成64位随机密钥
-    # 储存密钥
-    return SECRET_KEY
-
-
-def get_secret_key() -> str:
-    """
-    获取密钥
-    :return: 密钥
-    """
-    # 读取密钥
-    SECRET_KEY = "secret_key"
-    return SECRET_KEY
-
-
-def get_access_jwt(user: str) -> str:
+async def get_access_jwt(user: str) -> str:
     """
     生成JWT
     :param user: 用户信息
     :return: JWT Token
     """
-    SECRET_KEY = get_secret_key()
+    SECRET_KEY = await db_operation.KeyTable_get_key()  # 获取密匙
     payload = {
-        "jti": str(uuid.uuid4()),  # JWT ID
+        "jti": get_uuid(),  # JWT ID
         "user": user,
         "exp": datetime.now(timezone.utc)
         + timedelta(minutes=config.login_time),  # 使用带有UTC时区信息的datetime对象
@@ -43,13 +26,13 @@ def get_access_jwt(user: str) -> str:
     return access_token
 
 
-def get_user_from_jwt(token: str) -> str:
+async def get_user_from_jwt(token: str) -> str:
     """
-    验证JWT，返回用户信息
+    验证JWT，返回用户信息，如果Token无效，返回空字符串
     :param token: JWT Token
     :return: 用户信息，如果Token无效，返回None
     """
-    SECRET_KEY = get_secret_key()
+    SECRET_KEY = await db_operation.KeyTable_get_key()  # 获取密匙
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # 解码token
         return payload.get("user")  # 返回用户信息

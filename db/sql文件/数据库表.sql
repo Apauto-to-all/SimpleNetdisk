@@ -64,8 +64,7 @@ constraint IP_not_null not null;
 --密匙表相关域
 --创建Kid域，varchar类型，长度为1，密匙ID
 create domain KidDomain varchar(1) 
-	CONSTRAINT Kid_constraint CHECK (LENGTH(value) = 1)
-	DEFAULT 1;
+	constraint Kid_default default '1';
 --创建Key域，varchar类型，长度为64，密匙
 create domain KeyDomain varchar(64);
 

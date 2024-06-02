@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from logging.handlers import TimedRotatingFileHandler
-import sys
+import random
 
 # 全局配置文件
 
@@ -43,6 +43,9 @@ user_files_path = "files/files_all"
 # 用户文件夹路径
 log_path = "log"
 
+
+# 密匙过期时间，单位为随机的天数（5-10天）
+KEY_EXPIRE_DAYS = random.randint(5, 10)
 
 # 日志
 current_date = datetime.now().strftime("%Y-%m-%d")  # 获取当前的日期
