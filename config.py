@@ -33,13 +33,13 @@ login_time = 30
 
 # 储存路径，以path结尾
 # 用户头像路径
-user_avatar_path = "files\\avatars"
+user_avatar_path = "files/avatars"
 # 文件缩略图路径
-thumbnail_path = "files\\thumbnails"
+thumbnail_path = "files/thumbnails"
 # 文件夹锁/解锁图标路径
-folder_lock_path = "files\\lock"
+folder_lock_path = "files/lock"
 # 用户文件存放路径
-user_files_path = "files\\files_all"
+user_files_path = "files/files_all"
 # 用户文件夹路径
 log_path = "log"
 
