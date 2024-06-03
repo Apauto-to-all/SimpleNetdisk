@@ -27,32 +27,46 @@
 
     <!-- 批量操作 -->
     <h2>批量操作</h2>
-    <button id="downloadButton" onclick="download()">批量下载</button>
+    <button id="downloadButton" onclick="downloadALL()">批量下载</button>
     <button id="moveButton">批量移动</button>
     <button id="copyButton">批量复制</button>
-    <button id="deleteButton">批量删除</button>
+    <button id="deleteButton" onclick="deleteAll()">批量删除</button>
     <script>
         // 批量下载
-        function downloadALL() {
+        async function downloadALL() {
             var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
             for (var i = 0; i < checkboxes.length; i++) {
-                // 批量下载，发送get请求
-                fetch('/download?file_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+                // 创建新的 a 元素
+                var link = document.createElement('a');
+                link.href = '/download?file_id=' + checkboxes[i].id;
+                link.download = 'file_' + checkboxes[i].id;  // 设置下载的文件名
+                link.style.display = 'none';  // 隐藏元素
+                document.body.appendChild(link);  // 将元素添加到页面中
+                link.click();  // 模拟点击元素
+                document.body.removeChild(link);  // 从页面中移除元素
+
+                // 等待一段时间以允许文件下载开始
+                await new Promise(resolve => setTimeout(resolve, 100));
+
             }
         }
 
         // 批量删除
-        function deleteAll() {
+        async function deleteAll() {
             var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
+            var promises = [];
             for (var i = 0; i < checkboxes.length; i++) {
                 // 批量删除，发送get请求
-                fetch('/delete?file_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+                var promise = await fetch('/delete?file_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+                promises.push(promise);
             }
-            var checkboxes = document.querySelectorAll('input[type=checkbox].folder:checked');
+            checkboxes = document.querySelectorAll('input[type=checkbox].folder:checked');
             for (var i = 0; i < checkboxes.length; i++) {
                 // 批量删除，发送get请求
-                fetch('/delete?folder_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+                var promise = await fetch('/delete?folder_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+                promises.push(promise);
             }
+            Promise.all(promises).then(() => location.reload());
         }
     </script>
     <!-- 批量操作，结束 -->
