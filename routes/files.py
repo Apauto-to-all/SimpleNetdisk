@@ -33,12 +33,11 @@ async def download_file(
     file_path = file_dict.get("file_path")
     file_name = file_dict.get("file_name")
     # 使用原始文件路径拼接文件路径
-    down_file_path = os.path.join(config.user_files_path, file_path)  # 文件路径
-    if not os.path.exists(down_file_path):
+    if not os.path.exists(file_path):
         return {"error": "因无法预料的原因，文件消失了"}
 
     return FileResponse(
-        path=down_file_path,
+        path=file_path,
         filename=file_name,
     )
 
@@ -62,16 +61,20 @@ async def upload_file(
 
         for file in files:  # 遍历上传的文件
             contents = await file.read()  # 读取文件内容
-            file_path = await files_utils.get_file_path(username)
             file_name = file.filename  # 文件名
             file_size_bytes = len(contents)  # 文件大小（字节）
             file_size_kb = round(
                 file_size_bytes / 1024, 2
             )  # 文件大小（KB），保留两位小数
+            if await files_utils.verify_capacity_exceeded(username, file_size_kb):
+                return {"error": "容量不足，请清理文件后再上传"}
             file_id = await files_utils.save_file_get_file_id(
                 username, file_name, file_size_kb, folder_id
             )
-            file_path = os.path.join(file_path, file_id)
+            user_all_file_path = os.path.join(
+                config.user_files_path, username
+            )  # 用户的文件夹
+            file_path = os.path.join(user_all_file_path, file_id)
 
             with open(file_path, "wb") as f:
                 f.write(contents)  # 写入文件
@@ -200,7 +203,12 @@ async def encrypt_folder(
             password,
         )
         if parent_folder_id:
-            return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
+            response = RedirectResponse(
+                url=f"/index/{parent_folder_id}", status_code=303
+            )
+            response.delete_cookie("unlock_folder")  # 删除加密文件夹的 Cookie
+            return response
+
     return {"error": "加密失败"}
 
 
@@ -210,7 +218,7 @@ async def decrypt_folder(
     # 临时解密还是删除加密
     folder_id: Optional[str] = None,  # 添加查询参数
     password: Optional[str] = Form(None),  # 读取表单数据
-    is_temporary: Optional[bool] = Form(False),  # 读取表单数据
+    is_permanent: Optional[bool] = Form(False),  # 是否永久解密，删除密码
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
 ):
     # 判断是否登录
@@ -222,13 +230,13 @@ async def decrypt_folder(
             username,
             folder_id,
             password,
-            is_temporary,
+            is_permanent,
         )
         if parent_folder_id:  # 解密成功
             response = RedirectResponse(
                 url=f"/index/{parent_folder_id}", status_code=303
             )
-            if is_temporary:
+            if not is_permanent:
                 response.set_cookie(
                     key=f"unlock_folder",
                     value=await password_utils.encrypt_password(folder_id),

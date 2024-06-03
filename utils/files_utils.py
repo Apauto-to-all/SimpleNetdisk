@@ -179,14 +179,14 @@ async def encrypt_folder_get_parent_folder_id(
 
 
 async def decrypt_folder_get_parent_folder_id(
-    username: str, folder_id: str, password: str, is_temporary: bool
+    username: str, folder_id: str, password: str, is_permanent: bool
 ) -> str:
     """
     解密文件夹
     :param username: 用户名
     :param folder_id: 文件夹id
     :param password: 密码
-    :param is_temporary: 临时解密还是删除加密
+    :param is_permanent: 临时解密还是删除加密
     :return: 父级文件夹id
     """
     if username and folder_id and password:
@@ -194,7 +194,7 @@ async def decrypt_folder_get_parent_folder_id(
             username, folder_id
         )
         if await password_utils.verify_password(hashed_password, password):
-            if not is_temporary:  # 删除密码，永久实现
+            if is_permanent:  # 删除密码，永久解密
                 await db_operation.FolderTable_delete_password(username, folder_id)
             return await db_operation.FolderTable_get_parent_folder_id(
                 username, folder_id
@@ -251,20 +251,6 @@ async def create_folder_get_folder_id(
     return ""  # 创建失败
 
 
-async def get_file_path(username: str) -> str:
-    """
-    获取用户的文件路径
-    :param username: 用户名
-    :return: 文件路径
-    """
-    if username:
-        file_path = os.path.join(config.user_files_path, username)  # 用户的文件夹
-        if not os.path.exists(file_path):  # 如果文件夹不存在，创建文件夹
-            os.makedirs(file_path)
-        return file_path
-    return ""  # 获取失败
-
-
 async def save_file_get_file_id(
     username: str, file_name: str, file_size_kb: str, parent_folder: str
 ) -> str:
@@ -273,9 +259,10 @@ async def save_file_get_file_id(
     :param username: 用户名
     :param file_name: 文件名
     :param file_size_kb: 文件大小
+    :param parent_folder: 父文件夹id
     :return: 文件id
     """
-    if username and file_name and file_size_kb:  # 保存文件
+    if username and file_name and parent_folder:  # 保存文件
         new_file_id = await uuid_utils.get_uuid()  # 生成文件id
         while await verify_file_is_user(
             username, new_file_id
@@ -289,14 +276,29 @@ async def save_file_get_file_id(
             os.makedirs(user_all_file_path)  # 创建用户的文件夹
 
         file_path = os.path.join(user_all_file_path, new_file_id)
-        if username and file_name and file_path and file_size_kb:  # 保存文件
-            await db_operation.FileTable_insert(
-                username,
-                new_file_id,
-                parent_folder,
-                file_name,
-                file_size_kb,
-                file_path,
-            )
-            return new_file_id
+        await db_operation.FileTable_insert(
+            username,
+            new_file_id,
+            parent_folder,
+            file_name,
+            file_size_kb,
+            file_path,
+        )
+        return new_file_id
     return ""  # 保存失败
+
+
+# 检测上传的文件后，使用容量是否超过最大容量
+async def verify_capacity_exceeded(username: str, file_size_kb: str) -> bool:
+    """
+    检测上传的文件后，使用容量是否超过最大容量
+    :param username: 用户名
+    :param file_size_kb: 文件大小
+    :return: 是否超过最大容量
+    """
+    if username and file_size_kb:
+        user_all = await db_operation.UsersTable_select_all(username)
+        capacity_used = user_all.get("capacity_used")
+        capacity_total = user_all.get("capacity_total")
+        return int(capacity_used) + int(file_size_kb) > int(capacity_total)
+    return False  # 没有超过最大容量

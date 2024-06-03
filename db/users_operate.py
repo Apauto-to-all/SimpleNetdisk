@@ -79,7 +79,7 @@ class UsersOperate:
         try:
             async with self.pool.acquire() as connection:
                 result = await connection.fetch(sql, username)
-                return result[0].get("passwd")
+                return result[0].get("passwd") if result else ""
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)

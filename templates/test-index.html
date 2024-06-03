@@ -46,7 +46,7 @@
             var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
             for (var i = 0; i < checkboxes.length; i++) {
                 // 批量删除，发送get请求
-                fetch('/delete_file?file_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+                fetch('/delete?file_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
             }
             var checkboxes = document.querySelectorAll('input[type=checkbox].folder:checked');
             for (var i = 0; i < checkboxes.length; i++) {
@@ -65,7 +65,9 @@
         {% for uuid, name in all_dict.folders_path.items() %}
         <a class="path-info" id="{{ uuid }}" href="/index/{{ uuid }}">{{ name }}</a>
         {% endfor %}
-        <a class="path-info" id="{{ folder_id }}">当前文件夹</a>
+        {% endif %}
+        {% if folder_id != "/" %}
+        <a class="path-info" id="{{ folder_id }}" href="/index/{{ folder_id }}">当前文件夹</a>
         {% endif %}
     </ul>
     <!-- 实现文件夹显示，结束 -->
@@ -116,16 +118,16 @@
         <!-- 模态窗口 -->
         <div id="decryptModal{{ folder_item.uuid }}" class="decryptModal" style="display: none;">
             <!-- 表单 -->
-            <form action="/decrypt?folder_id={{ folder_item.uuid }}" method="post">
-                <input type="password" name="password" placeholder="输入密码">
-                <input type="checkbox" id="is_temporary{{ folder_item.uuid }}" name="is_temporary" value="False">
+            <form action="/decrypt?folder_id={{ folder_item.uuid }}" method="post" autocomplete="off">
+                <input type="text" name="password" placeholder="输入密码">
+                <input type="checkbox" id="is_permanent{{ folder_item.uuid }}" name="is_permanent" value="False">
                 <label for="option">永久删除密码</label>
                 <button id="decryptSubmit{{ folder_item.uuid }}">确认</button>
             </form>
             <button id="decryptCancel{{ folder_item.uuid }}">取消</button>
         </div>
         <script>
-            document.getElementById('is_temporary{{ folder_item.uuid }}').addEventListener('change', function () {
+            document.getElementById('is_permanent{{ folder_item.uuid }}').addEventListener('change', function () {
                 this.value = this.checked ? 'True' : 'False';
             });
             document.getElementById('decryptButton{{ folder_item.uuid }}').onclick = function () {
@@ -135,7 +137,6 @@
                 document.getElementById('decryptModal{{ folder_item.uuid }}').style.display = "none";
             }
         </script>
-
         {% else %}
         <img src="/folder/unlock" alt="unlock">
         <!-- 加密文件夹 -->
@@ -144,7 +145,7 @@
         <div id="encryptModal{{ folder_item.uuid }}" class="encryptModal" style="display: none;">
             <!-- 表单 -->
             <form action="/encrypt?folder_id={{ folder_item.uuid }}" method="post">
-                <input type="password" name="password" placeholder="输入密码">
+                <input type="text" name="password" placeholder="输入密码">
                 <button id="encryptSubmit{{ folder_item.uuid }}">确认</button>
             </form>
             <button id="encryptCancel{{ folder_item.uuid }}">取消</button>
@@ -198,7 +199,7 @@
         <a id="time">{{ file_item.time }}</a>
         <a id="size">{{ file_item.size }}</a>
         <a href="/download?file_id={{ file_item.uuid }}">下载此文件</a>
-        <a href="/delete_file?file_id={{ file_item.uuid }}">删除此文件</a>
+        <a href="/delete?file_id={{ file_item.uuid }}">删除此文件</a>
         <!-- 重命名文件 -->
         <button id="renameButton{{ file_item.uuid }}">重命名此文件</button>
         <!-- 弹出窗口 -->

@@ -29,16 +29,13 @@ async def index(
 ):
     username = await user_utils.isLogin_getUser(access_token)  # 从 JWT 中获取用户名
     if not username:  # 判断是否登录
-        return RedirectResponse(url="/login", status_code=303)
+        response = RedirectResponse(url="/login", status_code=303)
+        response.delete_cookie("access_token")  # 删除 Cookie
+        return response
     if folder_id != "/" and not await files_utils.verify_folder_is_user(
         username, folder_id
     ):  # 判断文件夹id是否为用户的文件夹
         return RedirectResponse(url="/index", status_code=303)
-
-    all_user = await get_data_utils.get_all_user(username)  # 获取用户的所有信息
-    all_dict = await get_data_utils.get_all(
-        username, folder_id
-    )  # 获取所有文件夹和文件信息
 
     if folder_id != "/" and await files_utils.is_folder_encrypted(
         username, folder_id
@@ -47,6 +44,11 @@ async def index(
             return RedirectResponse(url="/index", status_code=303)
         if not await password_utils.verify_password(unlock_folder, folder_id):
             return RedirectResponse(url="/index", status_code=303)
+
+    all_user = await get_data_utils.get_all_user(username)  # 获取用户的所有信息
+    all_dict = await get_data_utils.get_all(
+        username, folder_id
+    )  # 获取所有文件夹和文件信息
 
     if unlock_folder:
         for i in all_dict.get("folders"):

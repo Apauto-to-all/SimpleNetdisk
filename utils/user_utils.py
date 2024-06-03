@@ -1,6 +1,12 @@
-from . import jwt_token, password_utils
-from fastapi import Request
-from db.connection import DatabaseOperation
+import os  # 导入os模块
+from . import (
+    jwt_token,
+    password_utils,
+    files_utils,
+)  # 导入 JWT Token 模块，密码工具模块，文件工具模块
+from fastapi import Request  # 导入Request类
+from db.connection import DatabaseOperation  # 导入数据库操作类
+import config  # 导入配置文件
 
 db_operation = DatabaseOperation()
 
@@ -11,7 +17,10 @@ async def isLogin_getUser(access_token: str) -> str:
     :param access_token: JWT Token
     :return: 如果用户登录，返回用户名，否则返回空字符串
     """
-    return await jwt_token.get_user_from_jwt(access_token)  # 从 JWT 中获取用户名
+    username = await jwt_token.get_user_from_jwt(access_token)  # 从 JWT 中获取用户名
+    if await db_operation.UsersTable_verify_username(username):
+        return username
+    return ""
 
 
 async def get_token(user: str) -> str:
@@ -103,6 +112,17 @@ async def registerSuccess(username: str, password: str, regCode: str):
         username, password, grade
     ):  # 插入用户信息，如果插入成功
         await db_operation.RcodesTable_update_times_sub_one(regCode)  # 注册码使用次数-1
+    await db_operation.FolderTable_insert(username, "/", None, "根目录")  # 插入根文件夹
+    # 创建 hello 文件夹
+    folder_id = await files_utils.create_folder_get_folder_id(username, "/", "hello")
+    # 在 hello 文件夹中创建 world.txt 文件
+    new_file_id = await files_utils.save_file_get_file_id(
+        username, "world.txt", 0, folder_id
+    )
+    user_all_file_path = os.path.join(config.user_files_path, username)  # 用户的文件夹
+    file_path = os.path.join(user_all_file_path, new_file_id)
+    with open(file_path, "w") as f:
+        f.write("Hello World!")  # 写入内容
 
 
 async def isUseCapthca(request: Request) -> bool:

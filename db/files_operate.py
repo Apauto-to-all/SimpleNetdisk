@@ -111,6 +111,7 @@ class FileOperate:
                             "time": i.get("fictime"),
                         }
                     )
+                return files_list
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)

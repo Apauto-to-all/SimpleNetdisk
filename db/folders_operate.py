@@ -18,9 +18,10 @@ class FolderOperate:
     ):
         """
         插入文件夹
-        :param folder_name: 文件夹名称
         :param username: 用户名
-        :param parent_folder: 父文件夹
+        :param new_folder_id: 新文件夹id
+        :param parent_folder_id: 父文件夹id
+        :param folder_name: 文件夹名
         """
         sql_select_parent_folder_relation = """
         SELECT Relation
@@ -34,14 +35,19 @@ class FolderOperate:
         try:
             async with self.pool.acquire() as connection:
                 folder_relation = None
-                if parent_folder_id != "/":
+                if (
+                    parent_folder_id and parent_folder_id != "/"
+                ):  # 如果父文件夹id不为空，且不为根目录
                     parent_folder_relation = await connection.fetch(
-                        sql_select_parent_folder_relation, username, parent_folder_id
+                        sql_select_parent_folder_relation,
+                        username,
+                        parent_folder_id,
                     )
                     if parent_folder_relation:
                         folder_relation = (
-                            parent_folder_relation[0]["relation"] + parent_folder_id
-                        )
+                            parent_folder_relation[0]["relation"] or ""
+                        )  # 获取父文件夹的层级关系
+                        folder_relation += parent_folder_id  # 添加父文件夹id
                 await connection.execute(
                     sql,
                     username,
