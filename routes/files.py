@@ -210,9 +210,7 @@ async def encrypt_folder(
         )
         if parent_folder_id:
             if parent_folder_id == "/":
-                response = RedirectResponse(
-                    url=f"/index/{parent_folder_id}", status_code=303
-                )
+                response = RedirectResponse(url=f"/index", status_code=303)
             else:
                 response = RedirectResponse(
                     url=f"/index/{parent_folder_id}", status_code=303
