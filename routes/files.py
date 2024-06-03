@@ -78,6 +78,8 @@ async def upload_file(
 
             with open(file_path, "wb") as f:
                 f.write(contents)  # 写入文件
+        if folder_id == "/":
+            return RedirectResponse(url="/index", status_code=303)
         return RedirectResponse(url=f"/index/{folder_id}", status_code=303)
 
     return {"error": "上传失败"}
@@ -158,6 +160,8 @@ async def rename_file(
             new_file_name,
         )
         if parent_folder_id:
+            if parent_folder_id == "/":
+                return RedirectResponse(url="/index", status_code=303)
             return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
     if folder_id and new_folder_name:  # 重命名文件夹
         if await files_utils.is_folder_encrypted(username, folder_id):  # 文件夹被加密
@@ -171,6 +175,8 @@ async def rename_file(
             new_folder_name,
         )
         if parent_folder_id:
+            if parent_folder_id == "/":
+                return RedirectResponse(url="/index", status_code=303)
             return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
 
     return {"error": "重命名失败"}
@@ -203,9 +209,14 @@ async def encrypt_folder(
             password,
         )
         if parent_folder_id:
-            response = RedirectResponse(
-                url=f"/index/{parent_folder_id}", status_code=303
-            )
+            if parent_folder_id == "/":
+                response = RedirectResponse(
+                    url=f"/index/{parent_folder_id}", status_code=303
+                )
+            else:
+                response = RedirectResponse(
+                    url=f"/index/{parent_folder_id}", status_code=303
+                )
             response.delete_cookie("unlock_folder")  # 删除加密文件夹的 Cookie
             return response
 
@@ -233,9 +244,12 @@ async def decrypt_folder(
             is_permanent,
         )
         if parent_folder_id:  # 解密成功
-            response = RedirectResponse(
-                url=f"/index/{parent_folder_id}", status_code=303
-            )
+            if parent_folder_id == "/":
+                response = RedirectResponse(url=f"/index", status_code=303)
+            else:
+                response = RedirectResponse(
+                    url=f"/index/{parent_folder_id}", status_code=303
+                )
             if not is_permanent:
                 response.set_cookie(
                     key=f"unlock_folder",
@@ -263,5 +277,7 @@ async def create_folder(
             username, folder_id, folder_name
         )
         if new_folder_id:
+            if folder_id == "/":
+                return RedirectResponse(url="/index", status_code=303)
             return RedirectResponse(url=f"/index/{folder_id}", status_code=303)
     return {"error": "创建失败"}
