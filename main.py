@@ -4,7 +4,15 @@ from fastapi.responses import (
     RedirectResponse,  # 用于重定向
 )
 from fastapi.staticfiles import StaticFiles  # 静态文件目录
-from routes import files, get_img, login_out, register, index, folders
+from routes import (
+    files,
+    get_img,
+    login_out,
+    register,
+    index,
+    folders,
+    users,
+)  # 导入路由
 import config  # 导入配置文件
 from typing import Optional
 from utils import user_utils
@@ -52,6 +60,7 @@ app.include_router(index.router)  # 注册首页路由
 app.include_router(files.router)  # 注册下载文件路由
 app.include_router(get_img.router)  # 注册获取图片路由
 app.include_router(folders.router)  # 注册文件夹路由
+app.include_router(users.router)  # 注册用户路由
 
 if __name__ == "__main__":
     import uvicorn

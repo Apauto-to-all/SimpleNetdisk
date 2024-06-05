@@ -2,4 +2,5 @@ username : admin
 
 password : 1aA123456_
 
+new_password : 1aA123456_1
 regCode : 123

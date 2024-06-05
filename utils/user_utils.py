@@ -161,3 +161,33 @@ async def login_or_register_success(request: Request):
     await db_operation.AccessLogTable_update_failnum_zero(
         client_host, user_agent
     )  # 更新失败次数为 0
+
+
+# 修改用户昵称
+async def change_user_nickname(
+    username: str,
+    nickname: str,
+) -> bool:
+    """
+    修改用户昵称
+    :param username: 用户名
+    :param nickname: 昵称
+    :return: 如果修改成功，返回 True，否则返回 False
+    """
+    return await db_operation.UsersTable_update_nickname(
+        username, nickname
+    )  # 更新用户昵称
+
+
+# 修改用户密码
+async def change_user_password(username: str, new_password: str):
+    """
+    修改用户密码
+    :param username: 用户名
+    :param new_password: 新密码
+    :return: 如果修改成功，返回 True，否则返回 False
+    """
+    new_password = await password_utils.encrypt_password(new_password)  # 加密密码
+    return await db_operation.UsersTable_update_password(
+        username, new_password
+    )  # 更新用户密码

@@ -182,6 +182,29 @@ class UsersOperate:
             logger.error(error_info)
             logger.error(e)
 
+    # 更新用户昵称
+    async def UsersTable_update_nickname(self, username: str, nickname: str) -> bool:
+        """
+        更新用户昵称
+        :param username: 用户名
+        :param nickname: 昵称
+        :return: 如果更新成功就返回 True，否则返回 False
+        """
+        sql = """
+        update Users
+        set Nname = $2
+        where Uname = $1;
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.execute(sql, username, nickname)
+                return True if result else False
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return False
+
 
 """
 --等级表
