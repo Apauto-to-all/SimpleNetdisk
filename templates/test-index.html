@@ -185,8 +185,8 @@
         <div id="renameModal{{ folder_item.uuid }}" class="renameModal" style="display: none;">
             <!-- 表单 -->
             <form action="/rename?folder_id={{ folder_item.uuid }}" method="post">
-                <input type="text" name="new_folder_name" placeholder="输入新的名称">
-                <button id="renameSubmit{{ folder_item.uuid }}">确认</button>
+                <input type="text" value="{{ folder_item.name }}" name="new_folder_name" placeholder="输入新的名称">
+                <button id="renameSubmit{{ folder_item.uuid }}">重命名</button>
             </form>
             <!-- 表单结束 -->
             <button id="renameCancel{{ folder_item.uuid }}">取消</button>
@@ -224,8 +224,8 @@
         <div id="renameModal{{ file_item.uuid }}" class="renameModal" style="display: none;">
             <!-- 表单 -->
             <form action="/rename?file_id={{ file_item.uuid }}" method="post">
-                <input type="text" name="new_file_name" placeholder="输入新的名称">
-                <button id="renameSubmit{{ file_item.uuid }}">确认</button>
+                <input type="text" value="{{ file_item.name }}" name="new_file_name" placeholder="输入新的名称">
+                <button id="renameSubmit{{ file_item.uuid }}">重命名</button>
             </form>
             <button id="renameCancel{{ file_item.uuid }}">取消</button>
         </div>
