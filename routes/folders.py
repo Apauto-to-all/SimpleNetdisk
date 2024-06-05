@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Cookie, Form
+from fastapi import APIRouter, Cookie, Form, Response
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from utils import password_utils, user_utils, files_utils
@@ -11,6 +11,7 @@ templates = Jinja2Templates(directory="templates")
 # 加密文件夹
 @router.post("/encrypt")
 async def encrypt_folder(
+    response: Response,
     folder_id: Optional[str] = None,  # 添加查询参数
     password: Optional[str] = Form(None),  # 读取表单数据
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
@@ -29,18 +30,12 @@ async def encrypt_folder(
         if not await password_utils.verify_password(unlock_folder, folder_id):
             return {"error": "该文件夹未解密，请先解密再使用"}
     if folder_id and password:
-        parent_folder_id = await files_utils.encrypt_folder_get_parent_folder_id(
+        if await files_utils.encrypt_folder(
             username,
             folder_id,
             password,
-        )
-        if parent_folder_id:
-            if parent_folder_id == "/":
-                response = RedirectResponse(url=f"/index", status_code=303)
-            else:
-                response = RedirectResponse(
-                    url=f"/index/{parent_folder_id}", status_code=303
-                )
+        ):
+            response = Response(content="成功", status_code=200)
             response.delete_cookie("unlock_folder")  # 删除加密文件夹的 Cookie
             return response
 
@@ -50,6 +45,7 @@ async def encrypt_folder(
 # 解密文件夹
 @router.post("/decrypt")
 async def decrypt_folder(
+    response: Response,
     # 临时解密还是删除加密
     folder_id: Optional[str] = None,  # 添加查询参数
     password: Optional[str] = Form(None),  # 读取表单数据
@@ -61,19 +57,13 @@ async def decrypt_folder(
     if not username:
         return {"error": "未登录"}
     if folder_id and password:  # 解密文件夹
-        parent_folder_id = await files_utils.decrypt_folder_get_parent_folder_id(
+        if await files_utils.decrypt_folder(
             username,
             folder_id,
             password,
             is_permanent,
-        )
-        if parent_folder_id:  # 解密成功
-            if parent_folder_id == "/":
-                response = RedirectResponse(url=f"/index", status_code=303)
-            else:
-                response = RedirectResponse(
-                    url=f"/index/{parent_folder_id}", status_code=303
-                )
+        ):
+            response = Response(content="成功", status_code=200)
             if not is_permanent:
                 response.set_cookie(
                     key=f"unlock_folder",
@@ -97,13 +87,8 @@ async def create_folder(
     if folder_id and folder_name:  # 创建文件夹
         if await files_utils.is_folder_encrypted(username, folder_id):  # 文件夹被加密
             return {"error": "加密的文件夹下无法创建文件夹"}
-        new_folder_id = await files_utils.create_folder_get_folder_id(
-            username, folder_id, folder_name
-        )
-        if new_folder_id:
-            if folder_id == "/":
-                return RedirectResponse(url="/index", status_code=303)
-            return RedirectResponse(url=f"/index/{folder_id}", status_code=303)
+        await files_utils.create_folder_get_folder_id(username, folder_id, folder_name)
+        return {"success": "创建成功"}
     return {"error": "创建失败"}
 
 
@@ -129,26 +114,16 @@ async def delete_file_folder(
             if not await password_utils.verify_password(unlock_folder, lock_folder_id):
                 return {"error": "文件所属的文件夹未解密，请先解密再使用"}
         # 获取被删除文件的父级文件夹id
-        parent_folder_id = await files_utils.delete_file_get_parent_folder_id(
-            username, file_id
-        )
-        if parent_folder_id:
-            if parent_folder_id == "/":
-                return RedirectResponse(url="/index", status_code=303)
-            return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
+        if await files_utils.delete_file(username, file_id):
+            return {"success": "删除成功"}
     if folder_id and not file_id:  # 删除文件夹
         if await files_utils.is_folder_encrypted(username, folder_id):  # 文件夹被加密
             if not unlock_folder:
                 return {"error": "文件夹被加密，请先解密再使用"}
             if not await password_utils.verify_password(unlock_folder, folder_id):
                 return {"error": "该文件夹未解密，请先解密再使用"}
-        parent_folder_id = await files_utils.delete_folder_get_parent_folder_id(
-            username, folder_id
-        )
-        if parent_folder_id:
-            if parent_folder_id == "/":
-                return RedirectResponse(url="/index", status_code=303)
-            return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
+        if await files_utils.delete_folder(username, folder_id):
+            return {"success": "删除成功"}
 
     return {"error": "删除失败"}
 
@@ -176,29 +151,23 @@ async def rename_file(
                 return {"error": "文件所属的文件夹被加密，请先解密再使用"}
             if not await password_utils.verify_password(unlock_folder, lock_folder_id):
                 return {"error": "文件所属的文件夹未解密，请先解密再使用"}
-        parent_folder_id = await files_utils.rename_file_get_parent_folder_id(
+        if await files_utils.rename_file(
             username,
             file_id,
             new_file_name,
-        )
-        if parent_folder_id:
-            if parent_folder_id == "/":
-                return RedirectResponse(url="/index", status_code=303)
-            return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
+        ):
+            return {"success": "重命名成功"}
     if folder_id and new_folder_name:  # 重命名文件夹
         if await files_utils.is_folder_encrypted(username, folder_id):  # 文件夹被加密
             if not unlock_folder:
                 return {"error": "文件夹被加密，请先解密再使用"}
             if not await password_utils.verify_password(unlock_folder, folder_id):
                 return {"error": "该文件夹未解密，请先解密再使用"}
-        parent_folder_id = await files_utils.rename_folder_get_parent_folder_id(
+        if await files_utils.rename_folder(
             username,
             folder_id,
             new_folder_name,
-        )
-        if parent_folder_id:
-            if parent_folder_id == "/":
-                return RedirectResponse(url="/index", status_code=303)
-            return RedirectResponse(url=f"/index/{parent_folder_id}", status_code=303)
+        ):
+            return {"success": "重命名成功"}
 
     return {"error": "重命名失败"}

@@ -56,44 +56,42 @@ async def verify_and_return_files_info(username: str, file_id: str) -> dict:
     return {}
 
 
-# 删除文件，获取父级文件夹id
-async def delete_file_get_parent_folder_id(username: str, file_id: str) -> str:
+# 删除文件
+async def delete_file(username: str, file_id: str) -> bool:
     """
     删除文件
     :param username: 用户名
     :param file_id: 文件id
-    :return: 父级文件夹id
+    :return: 是否删除成功，True 为删除成功，False 为删除失败
     """
     if username and file_id:
         await db_operation.FileTable_delete(username, file_id)
-        return await db_operation.FileTable_get_parent_folder_id(username, file_id)
-    return ""  # 删除失败
+        return True
+    return False  # 删除失败
 
 
-# 删除文件夹，获取父级文件夹id
-async def delete_folder_get_parent_folder_id(username: str, folder_id: str) -> str:
+# 删除文件夹，删除成功返回True，失败返回False
+async def delete_folder(username: str, folder_id: str) -> bool:
     """
     删除文件夹
     :param username: 用户名
     :param folder_id: 文件夹id
-    :return: 父级文件夹id
+    :return: 是否删除成功，True 为删除成功，False 为删除失败
     """
     if username and folder_id:
         await db_operation.FolderTable_delete(username, folder_id)
-        return await db_operation.FolderTable_get_parent_folder_id(username, folder_id)
-    return ""  # 删除失败
+        return True
+    return False  # 删除失败
 
 
-# 重命名文件，获取父级文件夹id
-async def rename_file_get_parent_folder_id(
-    username: str, file_id: str, new_file_name: str
-) -> str:
+# 重命名文件，成功返回True，失败返回False
+async def rename_file(username: str, file_id: str, new_file_name: str) -> bool:
     """
     重命名文件
     :param username: 用户名
     :param file_id: 文件id
     :param new_file_name: 新文件名
-    :return: 父级文件夹id
+    :return: True 为重命名成功，False 为重命名失败
     """
     if username and file_id and new_file_name:
         parent_folder = await db_operation.FileTable_get_parent_folder_id(
@@ -106,20 +104,18 @@ async def rename_file_get_parent_folder_id(
             await db_operation.FileTable_rename_file(
                 username, file_id, new_file_name
             )  # 重命名文件
-            return parent_folder
-    return ""  # 重命名失败
+            return True
+    return False  # 重命名失败
 
 
-# 重命名文件夹，获取父级文件夹id
-async def rename_folder_get_parent_folder_id(
-    username: str, folder_id: str, new_folder_name: str
-) -> str:
+# 重命名文件夹
+async def rename_folder(username: str, folder_id: str, new_folder_name: str) -> bool:
     """
     重命名文件夹
     :param username: 用户名
     :param folder_id: 文件夹id
     :param new_folder_name: 新文件夹名
-    :return: 父级文件夹id
+    :return: True 为重命名成功，False 为重命名失败
     """
     if username and folder_id and new_folder_name:
         parent_folder = await db_operation.FolderTable_get_parent_folder_id(
@@ -132,39 +128,37 @@ async def rename_folder_get_parent_folder_id(
             await db_operation.FolderTable_rename_folder(
                 username, folder_id, new_folder_name
             )
-            return parent_folder
-    return ""  # 重命名失败
+            return True
+    return False  # 重命名失败
 
 
-# 加密文件夹，获取父级文件夹id
-async def encrypt_folder_get_parent_folder_id(
-    username: str, folder_id: str, password: str
-) -> str:
+# 加密文件夹，True 为加密成功，False 为加密失败
+async def encrypt_folder(username: str, folder_id: str, password: str) -> bool:
     """
     加密文件夹
     :param username: 用户名
     :param folder_id: 文件夹id
     :param password: 密码
-    :return: 父级文件夹id
+    :return: True 为加密成功，False 为加密失败
     """
     if username and folder_id and password:
         password = await password_utils.encrypt_password(password)
         await db_operation.FolderTable_encrypt_folder(username, folder_id, password)
-        return await db_operation.FolderTable_get_parent_folder_id(username, folder_id)
-    return ""  # 加密失败
+        return True
+    return False  # 加密失败
 
 
-# 解密文件夹，获取父级文件夹id
-async def decrypt_folder_get_parent_folder_id(
+# 解密文件夹，True 为解密成功，False 为解密失败
+async def decrypt_folder(
     username: str, folder_id: str, password: str, is_permanent: bool
-) -> str:
+) -> bool:
     """
     解密文件夹
     :param username: 用户名
     :param folder_id: 文件夹id
     :param password: 密码
     :param is_permanent: 临时解密还是删除加密
-    :return: 父级文件夹id
+    :return: True 为解密成功，False 为解密失败
     """
     if username and folder_id and password:
         hashed_password = await db_operation.FolderTable_get_password(
@@ -173,10 +167,9 @@ async def decrypt_folder_get_parent_folder_id(
         if await password_utils.verify_password(hashed_password, password):
             if is_permanent:  # 删除密码，永久解密
                 await db_operation.FolderTable_delete_password(username, folder_id)
-            return await db_operation.FolderTable_get_parent_folder_id(
-                username, folder_id
-            )
-    return ""  # 解密失败
+            return True
+
+    return False  # 解密失败
 
 
 # 判断文件夹是否加密
@@ -209,26 +202,26 @@ async def get_parent_folder_id_is_locked(username: str, file_id: str) -> str:
     return ""  # 获取失败
 
 
-# 创建文件夹，获取文件夹id
+# 创建文件夹
 async def create_folder_get_folder_id(
-    username: str, folder_id: str, folder_name: str
+    username: str, parent_folder_id: str, folder_name: str
 ) -> str:
     """
     创建文件夹
     :param username: 用户名
-    :param folder_id: 父级文件夹id
+    :param parent_folder_id: 父级文件夹id
     :param folder_name: 文件夹名
     :return: 文件夹id
     """
-    if username and folder_id and folder_name:
+    if username and parent_folder_id and folder_name:
         new_folder_id = await uuid_utils.get_uuid()
         while await verify_folder_is_user(username, new_folder_id):
             new_folder_id = await uuid_utils.get_uuid()
         folder_name = await auto_rename_folder(
-            username, folder_id, folder_name
+            username, parent_folder_id, folder_name
         )  # 重命名文件夹，如果文件夹名重复，则重命名
         await db_operation.FolderTable_insert(
-            username, new_folder_id, folder_id, folder_name
+            username, new_folder_id, parent_folder_id, folder_name
         )
         return new_folder_id
     return ""  # 创建失败

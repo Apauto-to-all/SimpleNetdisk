@@ -78,9 +78,6 @@ async def upload_file(
             file_path = os.path.join(user_all_file_path, file_id)
 
             with open(file_path, "wb") as f:
-                f.write(contents)  # 写入文件
-        if folder_id == "/":
-            return RedirectResponse(url="/index", status_code=303)
-        return RedirectResponse(url=f"/index/{folder_id}", status_code=303)
+                f.write(contents)  # 写入文件内容
 
     return {"error": "上传失败"}
