@@ -106,13 +106,17 @@
         function chk_single() {
             var checkboxes = document.querySelectorAll('input[type=checkbox].checkboxItem');
             var allChecked = true;
+            var someChecked = false;
             for (var i = 0; i < checkboxes.length; i++) {
-                if (!checkboxes[i].checked) {
+                if (checkboxes[i].checked) {
+                    someChecked = true;
+                } else {
                     allChecked = false;
-                    break;
                 }
             }
-            document.getElementById('chkall').checked = allChecked;
+            var chkall = document.getElementById('chkall');
+            chkall.checked = allChecked;
+            chkall.indeterminate = someChecked && !allChecked;
         }
     </script>
 
