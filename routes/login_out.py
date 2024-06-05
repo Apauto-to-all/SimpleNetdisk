@@ -18,6 +18,13 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")  # 模板目录
 
 
+@router.get("/logout")  # 退出登录
+async def logout():
+    response = RedirectResponse(url="/login", status_code=303)  # 重定向到登录页面
+    response.delete_cookie("access_token")  # 删除 Cookie
+    return response
+
+
 @router.get("/login", response_class=HTMLResponse)
 async def login(
     request: Request,  # 用于接收请求
