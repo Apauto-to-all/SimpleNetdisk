@@ -239,11 +239,10 @@ class FolderOperate:
         self, username: str, folder_id: str, new_folder_name: str
     ):
         """
-        重命名文件夹，并返回父类文件夹id
+        重命名文件夹
         :param username: 用户名
         :param folder_id: 文件夹id
         :param new_folder_name: 新文件夹名
-        :return: 父类文件夹id
         """
         update_sql = """
         UPDATE folders
@@ -320,6 +319,34 @@ class FolderOperate:
         try:
             async with self.pool.acquire() as connection:
                 result = await connection.fetch(sql, username, folder_id)
+                return True if result else False
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return False
+
+    # 验证同一文件夹下，是否存在文件夹名
+    async def FolderTable_verify_name_only(
+        self, username: str, parent_folder: str, folder_name: str
+    ) -> bool:
+        """
+        验证同一文件夹下，是否存在文件夹名
+        :param username: 用户名
+        :param parent_folder: 父文件夹id
+        :param folder_name: 文件夹名
+        :return: 如果存在就返回 True，否则返回 False
+        """
+        sql = """
+        SELECT Foname
+        FROM folders
+        WHERE Uname = $1 AND Faid = $2 AND Foname = $3
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.fetch(
+                    sql, username, parent_folder, folder_name
+                )
                 return True if result else False
         except Exception as e:
             error_info = traceback.format_exc()

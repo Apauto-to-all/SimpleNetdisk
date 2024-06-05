@@ -175,9 +175,7 @@ class FileOperate:
             return {}
 
     # 删除文件，设置Fifdel为true，获取父级文件夹id
-    async def FileTable_delete_get_parent_folder_id(
-        self, username: str, file_id: str
-    ) -> str:
+    async def FileTable_delete(self, username: str, file_id: str) -> str:
         """
         删除文件，设置Fifdel为true，获取父级文件夹id
         :param username: 用户名
@@ -189,15 +187,30 @@ class FileOperate:
         SET Fifdel = true
         WHERE Uname = $1 AND Fid = $2
         """
-        select_sql = """
+        try:
+            async with self.pool.acquire() as connection:
+                await connection.execute(update_sql, username, file_id)
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+
+    # 获取父类文件夹id
+    async def FileTable_get_parent_folder_id(self, username: str, file_id: str) -> str:
+        """
+        获取父类文件夹id
+        :param username: 用户名
+        :param file_id: 文件id
+        :return: 父类文件夹id
+        """
+        sql = """
         SELECT Foid
         FROM Files
         WHERE Uname = $1 AND Fid = $2
         """
         try:
             async with self.pool.acquire() as connection:
-                await connection.execute(update_sql, username, file_id)
-                result = await connection.fetch(select_sql, username, file_id)
+                result = await connection.fetch(sql, username, file_id)
                 return result[0].get("foid") if result else ""
         except Exception as e:
             error_info = traceback.format_exc()
@@ -205,37 +218,56 @@ class FileOperate:
             logger.error(e)
             return ""
 
-    # 重命名文件，并返回父类文件夹id
-    async def FileTable_rename_file_get_parent_folder_id(
+    # 重命名文件
+    async def FileTable_rename_file(
         self, username: str, file_id: str, new_file_name: str
     ) -> str:
         """
-        重命名文件，并返回父类文件夹id
+        重命名文件
         :param username: 用户名
         :param file_id: 文件id
         :param new_file_name: 新文件名
-        :return: 父类文件夹id
         """
         update_sql = """
         UPDATE Files
         SET Finame = $3
         WHERE Uname = $1 AND Fid = $2
         """
-        select_sql = """
-        SELECT Foid
-        FROM Files
-        WHERE Uname = $1 AND Fid = $2
-        """
         try:
             async with self.pool.acquire() as connection:
-                await connection.execute(update_sql, username, file_id, new_file_name)
-                result = await connection.fetch(select_sql, username, file_id)
-                return result[0].get("foid") if result else ""
+                await connection.execute(
+                    update_sql, username, file_id, new_file_name
+                )  # 执行更新
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)
             logger.error(e)
-            return ""
+
+    # 检测文件名，是否存在于父类文件夹中
+    async def FileTable_verify_name_only(
+        self, username: str, parent_folder: str, file_name: str
+    ) -> bool:
+        """
+        检测文件名，是否存在于父类文件夹中
+        :param username: 用户名
+        :param parent_folder: 父文件夹id
+        :param file_name: 文件名
+        :return: 如果文件名存在就返回 True，否则返回 False
+        """
+        sql = """
+        SELECT Finame
+        FROM Files
+        WHERE Uname = $1 AND Foid = $2 AND Finame = $3
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.fetch(sql, username, parent_folder, file_name)
+                return True if result else False
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return False
 
 
 """
