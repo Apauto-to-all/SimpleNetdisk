@@ -274,8 +274,9 @@ async def save_file_get_file_id(
         )  # 用户的文件夹
         if not os.path.exists(user_all_file_path):  # 如果文件夹不存在，创建文件夹
             os.makedirs(user_all_file_path)  # 创建用户的文件夹
-
+        # 文件路径
         file_path = os.path.join(user_all_file_path, new_file_id)
+        # 保存文件
         await db_operation.FileTable_insert(
             username,
             new_file_id,
@@ -284,6 +285,8 @@ async def save_file_get_file_id(
             file_size_kb,
             file_path,
         )
+        # 更新用户使用容量
+        await db_operation.UsersTable_update_uspace(username, file_size_kb)
         return new_file_id
     return ""  # 保存失败
 
@@ -297,8 +300,12 @@ async def verify_capacity_exceeded(username: str, file_size_kb: str) -> bool:
     :return: 是否超过最大容量
     """
     if username and file_size_kb:
+        # 获取用户的所有信息
         user_all = await db_operation.UsersTable_select_all(username)
+        # 用户使用容量 + 文件大小 > 最大容量
         capacity_used = user_all.get("capacity_used")
+        # 用户总容量
         capacity_total = user_all.get("capacity_total")
+        # 返回是否超过最大容量
         return int(capacity_used) + int(file_size_kb) > int(capacity_total)
     return False  # 没有超过最大容量

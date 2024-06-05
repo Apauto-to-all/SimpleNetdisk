@@ -161,6 +161,27 @@ class UsersOperate:
             logger.error(e)
             return ""
 
+    # 插入文件后，更新用户已使用容量
+    async def UsersTable_update_uspace(self, username: str, file_size: int):
+        """
+        插入文件后，更新用户已使用容量
+        :param username: 用户名
+        :param file_size: 文件大小
+        :return: 如果更新成功就返回 True，否则返回 False
+        """
+        sql = """
+        update Users
+        set Uspace = Uspace + $2
+        where Uname = $1;
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                await connection.execute(sql, username, file_size)
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+
 
 """
 --等级表

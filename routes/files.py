@@ -68,6 +68,7 @@ async def upload_file(
             )  # 文件大小（KB），保留两位小数
             if await files_utils.verify_capacity_exceeded(username, file_size_kb):
                 return {"error": "容量不足，请清理文件后再上传"}
+            # 保存文件，获取文件id，并更新用户已使用容量
             file_id = await files_utils.save_file_get_file_id(
                 username, file_name, file_size_kb, folder_id
             )
