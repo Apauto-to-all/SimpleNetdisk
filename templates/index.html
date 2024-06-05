@@ -11,7 +11,8 @@
 <body class="container">
 <!-- <h2>登出功能实现</h2> -->
 <button id="logoutButton"
-        onclick="fetch('/logout', { method: 'GET', credentials: 'include' }).then(function(response) { if (response.redirected) { window.location.href = response.url; } });">登出</button>
+        onclick="fetch('/logout', { method: 'GET', credentials: 'include' }).then(function(response) { if (response.redirected) { window.location.href = response.url; } });"
+        style="background-color: #008CBA;width: 50px;height: 25px;border-radius: 50px ">登出</button>
 <div class="main-content"><!-- 整体布局 -->
     <div class="left-con"><!-- 左布局 -->
         <!-- 显示用户信息 -->
@@ -26,28 +27,135 @@
         <!--     <p class="user-info2" id="nickname">
             </p> -->
         <!-- 3. 用户容量 -->
-        <p class="capacity-info1" id="capacity_total" style="font-size: 15px;">总容量: {{ all_user.capacity.total }}</p>
+        <p class="capacity-info1" id="capacity_total" style="font-size: 15px;">总容量: {{ all_user.capacity_total }}</p>
         <br>
-        <p class="capacity-info2" id="capacity_used" style="font-size: 15px;">已用容量: {{ all_user.capacity.used }}</p>
+        <p class="capacity-info2" id="capacity_used" style="font-size: 15px;">已用容量: {{ all_user.capacity_used }}</p>
         <br>
-        <p class="capacity-info3" id="capacity_percent" style="font-size: 15px;">已用百分比: {{ all_user.capacity.percent }}</p>
+        <p class="capacity-info3" id="capacity_percent" style="font-size: 15px;">已用百分比: {{ all_user.capacity_percent }}</p>
         <div class="cet1">
             <p>
                 <span></span>
-                <meter min="0" max="100" value="{{ all_user.capacity.percent }}">350 degrees</meter>
+                <meter min="0" max="100" value="{{ all_user.capacity_percent }}">350 degrees</meter>
             </p>
         </div>
         <!-- 显示用户信息，结束 -->
         <center class="cet">
-            <button class="setting">设置</button>
+            <button id="changeUserInfoButton" class="setting">修改用户信息</button>
+    <!-- 模态窗口 -->
+    <div id="changeUserInfoModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <!-- 表单 -->
+            <!-- 修改用户头像 -->
+            <h2>修改头像</h2>
+            <form id="avatarForm" enctype="multipart/form-data">
+                <label for="avatar">上传用户头像，4MB以内</label>
+                <input type="file" id="avatarFile" name="avatarFile" accept="image/*" onchange="checkFileSize(this)">
+                <input type="submit" value="上传">
+            </form>
+            <script>
+                function checkFileSize(input) {
+                    if (input.files[0].size > 4 * 1024 * 1024) {
+                        alert("文件大小超过了限制！");
+                        input.value = "";
+                        return;
+                    }
+                }
+                document.getElementById('avatarForm').addEventListener('submit', function (event) {
+                    var fileInput = document.getElementById('avatarFile');
+                    if (fileInput.files.length === 0) {
+                        event.preventDefault();
+                        alert('请至少选择一个文件上传');
+                        return;
+                    }
+                    event.preventDefault();
+                    var formData = new FormData(this);
+                    fetch('/change_user_avatar', {
+                        method: 'POST',
+                        body: formData
+                    }).then(
+                        //刷新页面
+                        location.reload()
+                    );
+                });
+            </script>
+            <!-- 修改用户昵称 -->
+            <h2>修改昵称</h2>
+            <form id="nicknameForm">
+                <label for="nickname">输入新的昵称</label>
+                <input type="text" value="{{ all_user.nickname }}" name="nickname" placeholder="输入新的昵称">
+                <button id="changeUserInfoSubmit">确认</button>
+            </form>
+            <script>
+                document.getElementById('nicknameForm').addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    var formData = new FormData(this);
+                    fetch('/change_user_nickname', {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert(data.error);
+                            } else {
+                                // 刷新页面
+                                location.reload();
+                            }
+                        })
+                });
+            </script>
+            <!-- 修改密码 -->
+            <h2>修改密码</h2>
+            <form id="passwordForm">
+                <label for="old_password">输入旧的密码</label>
+                <br>
+                <input type="password" name="old_password" placeholder="输入旧的密码">
+                <br>
+                <label for="password">输入新的密码</label>
+                <br>
+                <input type="password" name="password" placeholder="输入新的密码">
+                <br>
+                <input type="password" name="confirm_password" placeholder="再次输入新的密码">
+                <br>
+                <button type="submit">确认</button>
+            </form>
+            <script>
+                document.getElementById('passwordForm').addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    var formData = new FormData(this);
+
+                    fetch('/change_user_password', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert(data.error);
+                            } else {
+                                // 刷新页面
+                                location.reload();
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                });
+            </script>
+
+            <!-- 表单结束 -->
+            <h2>取消修改用户信息</h2>
+            <button id="changeUserInfoCancel">取消</button>
+        </div>
+    </div>
         </center>
     </div>
-    <!-- 批量操作 -->
-    <!-- <h2>批量操作</h2>
-    <a> 批量下载</a>
-    <a> 批量移动</a>
-    <a> 批量删除</a> -->
-    <!-- 批量操作，结束 -->
+    <script>
+        document.getElementById('changeUserInfoButton').onclick = function () {
+            document.getElementById('changeUserInfoModal').style.display = "block";
+        }
+        document.getElementById('changeUserInfoCancel').onclick = function () {
+            document.getElementById('changeUserInfoModal').style.display = "none";
+        }
+    </script>
     <div class="right-con"><!-- 右布局 -->
         <div class="test">
             <button class="button1" id="downloadButton" onclick="downloadALL()" style="margin-right: 80px">
@@ -134,16 +242,21 @@
         function chk_single() {
             var checkboxes = document.querySelectorAll('input[type=checkbox].checkboxItem');
             var allChecked = true;
+            var someChecked = false;
             for (var i = 0; i < checkboxes.length; i++) {
-                if (!checkboxes[i].checked) {
+                if (checkboxes[i].checked) {
+                    someChecked = true;
+                } else {
                     allChecked = false;
-                    break;
                 }
             }
-            document.getElementById('chkall').checked = allChecked;
+            var chkall = document.getElementById('chkall');
+            chkall.checked = allChecked;
+            chkall.indeterminate = someChecked && !allChecked;
         }
     </script>
         <h2 style="margin-top: 20px">文件夹</h2>
+    <div style="width:1200px;height:150px;overflow:scroll;background:#EEEEEE;">
         {% if all_dict.folders %}
     {% for folder_item in all_dict.folders %}
     <div type="folder" class="folder">
@@ -207,8 +320,8 @@
         <div id="renameModal{{ folder_item.uuid }}" class="renameModal" style="display: none;">
             <!-- 表单 -->
             <form action="/rename?folder_id={{ folder_item.uuid }}" method="post">
-                <input type="text" name="new_folder_name" placeholder="输入新的名称">
-                <button id="renameSubmit{{ folder_item.uuid }}">确认</button>
+                <input type="text" value="{{ folder_item.name }}" name="new_folder_name" placeholder="输入新的名称">
+                <button id="renameSubmit{{ folder_item.uuid }}">重命名</button>
             </form>
             <!-- 表单结束 -->
             <button id="renameCancel{{ folder_item.uuid }}">取消</button>
@@ -226,10 +339,12 @@
     </div>
     {% endfor %}
     {% endif %}
+    </div>
     <!-- 文件夹显示结束 -->
         <!-- 文件夹显示结束 -->
         <!--实现文件显示 -->
         <h2 style="margin-top: 30px">文件</h2>
+    <div style="width:1200px;height:150px;overflow:scroll;background:#EEEEEE;">
         {% if all_dict.files %}
     {% for file_item in all_dict.files %}
     <div type="file" class="file">
@@ -246,8 +361,8 @@
         <div id="renameModal{{ file_item.uuid }}" class="renameModal" style="display: none;">
             <!-- 表单 -->
             <form action="/rename?file_id={{ file_item.uuid }}" method="post">
-                <input type="text" name="new_file_name" placeholder="输入新的名称">
-                <button id="renameSubmit{{ file_item.uuid }}">确认</button>
+                <input type="text" value="{{ file_item.name }}" name="new_file_name" placeholder="输入新的名称">
+                <button id="renameSubmit{{ file_item.uuid }}">重命名</button>
             </form>
             <button id="renameCancel{{ file_item.uuid }}">取消</button>
         </div>
@@ -263,7 +378,7 @@
     </script>
     {% endfor %}
     {% endif %}
-
+    </div>
         <!-- 文件显示结束 -->
         <!-- 创建文件夹 -->
             <button id="createFolderButton{{ folder_id }}" class="button33" style="background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;">
@@ -294,6 +409,7 @@
             <!-- 上传文件 -->
 
 
+
             <!-- 显示上传表单的按钮 -->
             <button onclick="showUploadForm()" class="button33" style="background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;">
                 上传文件
@@ -303,19 +419,25 @@
                 <div class="modal-content">
                     <span class="close">&times;</span>
                     <h2>请上传一个或多个文件</h2>
-                    <form action="/upfile" method="post" enctype="multipart/form-data">
-                        <input type="file" name="files" multiple>
-                        <input type="submit" value="上传">
-                    </form>
+                    <form id="upfiles" action="/upfile?folder_id={{ folder_id }}" method="post" enctype="multipart/form-data">
+                <input type="file" id="files" name="files" multiple>
+                <input type="submit" value="上传">
+            </form>
                 </div>
             </div>
         </div>
     <script>
+         document.getElementById('upfiles').addEventListener('submit', function (event) {
+            var fileInput = document.getElementById('files');
+            if (fileInput.files.length === 0) {
+                event.preventDefault();
+                alert('请至少选择一个文件上传');
+            }
+        });
         function showUploadForm() {
             var modal = document.getElementById('uploadModal');
             modal.style.display = "block";
         }
-
         window.onload = function () {
             var modal = document.getElementById('uploadModal');
             var span = document.getElementsByClassName("close")[0];
