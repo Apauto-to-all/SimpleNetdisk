@@ -223,7 +223,7 @@
             </div>
         </div>
         <!-- 实现文件夹显示 -->
-    <h2>详细信息</h2>
+    <br>
     <input type="checkbox" id="chkall" onclick="chk_all()">
     <a>|</a>
     <a>文件名</a>
@@ -255,8 +255,8 @@
             chkall.indeterminate = someChecked && !allChecked;
         }
     </script>
-        <h2 style="margin-top: 20px">文件夹</h2>
-    <div style="width:1200px;height:150px;overflow:scroll;background:#EEEEEE;">
+
+    <div class="gx">
         {% if all_dict.folders %}
     {% for folder_item in all_dict.folders %}
     <div type="folder" class="folder">
@@ -339,12 +339,9 @@
     </div>
     {% endfor %}
     {% endif %}
-    </div>
     <!-- 文件夹显示结束 -->
         <!-- 文件夹显示结束 -->
         <!--实现文件显示 -->
-        <h2 style="margin-top: 30px">文件</h2>
-    <div style="width:1200px;height:150px;overflow:scroll;background:#EEEEEE;">
         {% if all_dict.files %}
     {% for file_item in all_dict.files %}
     <div type="file" class="file">
@@ -381,7 +378,7 @@
     </div>
         <!-- 文件显示结束 -->
         <!-- 创建文件夹 -->
-            <button id="createFolderButton{{ folder_id }}" class="button33" style="background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;">
+            <button id="createFolderButton{{ folder_id }}" class="button33" style=" background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;">
                 创建文件夹
             </button>
             <!-- 模态窗口 -->

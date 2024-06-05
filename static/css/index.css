@@ -162,3 +162,7 @@ body {
     margin-top:80px;
     float: right;
 }
+.gx{
+    width:1200px;height:150px;overflow:scroll;
+    background: #fbc2eb;
+}
