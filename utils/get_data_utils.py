@@ -1,3 +1,4 @@
+from datetime import datetime
 from utils import uuid_utils
 from db.connection import DatabaseOperation  # 导入数据库操作类
 
@@ -101,6 +102,20 @@ def get_trash_files(username: str) -> list:
         ]
 
 
+async def convert_kb_to_human_readable(file_size_kb: int) -> str:
+    """
+    将KB转换为MB，GB，保留两位小数
+    :param file_size_kb: 文件大小
+    :return: 文件大小
+    """
+    if file_size_kb < 1024:
+        return f"{file_size_kb}KB"
+    elif file_size_kb < 1024 * 1024:
+        return f"{file_size_kb / 1024:.2f}MB"
+    else:
+        return f"{file_size_kb / 1024 / 1024:.2f}GB"
+
+
 async def get_all(username: str, folder_id: str) -> dict:
     """
     :param username: 用户名
@@ -111,6 +126,17 @@ async def get_all(username: str, folder_id: str) -> dict:
     all_dict["folders_path"] = await get_folder_path(username, folder_id)
     all_dict["folders"] = await get_folders(username, folder_id)
     all_dict["files"] = await get_files(username, folder_id)
+    for file in all_dict["files"]:
+        file["size"] = await convert_kb_to_human_readable(
+            file["size"]
+        )  # 将KB转换为MB，GB，保留两位小数
+        file["time"] = await convert_time_to_chinese(
+            file["time"]
+        )  # 时间转换为中文的年月日
+    for folder in all_dict["folders"]:
+        folder["time"] = await convert_time_to_chinese(
+            folder["time"]
+        )  # 时间转换为中文的年月日
     return all_dict
 
 
@@ -124,10 +150,16 @@ async def get_all_user(username: str) -> dict:
     all_user_dict["capacity_percent"] = round(
         all_user_dict["capacity_used"] / all_user_dict["capacity_total"] * 100, 2
     )
+    all_user_dict["capacity_total"] = await convert_kb_to_human_readable(
+        all_user_dict["capacity_total"]
+    )  # 将KB转换为MB，GB，保留两位小数
+    all_user_dict["capacity_used"] = await convert_kb_to_human_readable(
+        all_user_dict["capacity_used"]
+    )  # 将KB转换为MB，GB，保留两位小数
     return all_user_dict
 
 
-def get_all_trash(username: str) -> dict:
+async def get_all_trash(username: str) -> dict:
     """
     :param username: 用户名
     :return: 返回页面所有文件的内容
@@ -136,3 +168,15 @@ def get_all_trash(username: str) -> dict:
     all_dict["trash_folders"] = get_trash_folders(username)
     all_dict["trash_files"] = get_trash_files(username)
     return all_dict
+
+
+# 2024-06-04 15:35:22.276136，时间转换为中文的年月日
+async def convert_time_to_chinese(time_str: str) -> str:
+    """
+    时间转换为中文的年月日
+    :param time_str: 时间
+    :return: 中文的年月日
+    """
+    # 格式化为中文的年月日
+    chinese_date = time_str.strftime("%Y年%m月%d日")
+    return chinese_date
