@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>简云</title>
+    <link rel="stylesheet" href="../static/css/index_styles.css">
+    <link rel="stylesheet" href="../static/css/index.css">
+    <!-- 引入样式 -->
+    <link href="../bootstrap/bootstrap-2.0.3.css" rel="stylesheet">
+</head>
+<body class="container">
+<!-- <h2>登出功能实现</h2> -->
+<button id="logoutButton"
+        onclick="fetch('/logout', { method: 'GET', credentials: 'include' }).then(function(response) { if (response.redirected) { window.location.href = response.url; } });">登出</button>
+<div class="main-content"><!-- 整体布局 -->
+    <div class="left-con"><!-- 左布局 -->
+        <!-- 显示用户信息 -->
+        <!--  <h2>用户信息，以及容量信息</h2> -->
+        <!--  --><!-- 1. 头像 -->
+        <img class="user-info1" src="/user/avatar" alt="avatar">
+        <!-- 2. 用户昵称 -->
+        <br>
+        <center>
+            <button class="user-info2" id="nickname">{{all_user.nickname}}</button>
+        </center>
+        <!--     <p class="user-info2" id="nickname">
+            </p> -->
+        <!-- 3. 用户容量 -->
+        <p class="capacity-info1" id="capacity_total" style="font-size: 15px;">总容量: {{ all_user.capacity.total }}</p>
+        <br>
+        <p class="capacity-info2" id="capacity_used" style="font-size: 15px;">已用容量: {{ all_user.capacity.used }}</p>
+        <br>
+        <p class="capacity-info3" id="capacity_percent" style="font-size: 15px;">已用百分比: {{ all_user.capacity.percent }}</p>
+        <div class="cet1">
+            <p>
+                <span></span>
+                <meter min="0" max="100" value="{{ all_user.capacity.percent }}">350 degrees</meter>
+            </p>
+        </div>
+        <!-- 显示用户信息，结束 -->
+        <center class="cet">
+            <button class="setting">设置</button>
+        </center>
+    </div>
+    <!-- 批量操作 -->
+    <!-- <h2>批量操作</h2>
+    <a> 批量下载</a>
+    <a> 批量移动</a>
+    <a> 批量删除</a> -->
+    <!-- 批量操作，结束 -->
+    <div class="right-con"><!-- 右布局 -->
+        <div class="test">
+            <button class="button1" id="downloadButton" onclick="downloadALL()" style="margin-right: 80px">
+               批量下载</button>
+            <button class="button2" id="moveButton" style="margin-right: 80px">
+               批量移动</button>
+            <button class="button3" id="copyButton" style="margin-right: 80px">
+               批量复制</button>
+            <button class="button4" id="deleteButton" onclick="deleteAll()" style="margin-right: 80px">
+                批量删除</button>
+             <script>
+        // 批量下载
+        async function downloadALL() {
+            var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
+            for (var i = 0; i < checkboxes.length; i++) {
+                // 创建新的 a 元素
+                var link = document.createElement('a');
+                link.href = '/download?file_id=' + checkboxes[i].id;
+                link.download = 'file_' + checkboxes[i].id;  // 设置下载的文件名
+                link.style.display = 'none';  // 隐藏元素
+                document.body.appendChild(link);  // 将元素添加到页面中
+                link.click();  // 模拟点击元素
+                document.body.removeChild(link);  // 从页面中移除元素
+
+                // 等待一段时间以允许文件下载开始
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+            }
+        }
+
+        // 批量删除
+        async function deleteAll() {
+            var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
+            var promises = [];
+            for (var i = 0; i < checkboxes.length; i++) {
+                // 批量删除，发送get请求
+                var promise = await fetch('/delete?file_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+                promises.push(promise);
+            }
+            checkboxes = document.querySelectorAll('input[type=checkbox].folder:checked');
+            for (var i = 0; i < checkboxes.length; i++) {
+                // 批量删除，发送get请求
+                var promise = await fetch('/delete?folder_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+                promises.push(promise);
+            }
+            Promise.all(promises).then(() => location.reload());
+        }
+    </script>
+        </div>
+        <!-- 显示父类文件路径 -->
+        <div class="fa-url">
+            <!-- <h2>父级文件夹的路径</h2> -->
+            <div class="fa-url">
+                <ul style="padding-top: 15px">
+                     <a class="path-info" id="/" href="/index">主页面</a>
+        {% if all_dict.get('folders_path') %}
+        {% for uuid, name in all_dict.folders_path.items() %}
+        <a class="path-info" id="{{ uuid }}" href="/index/{{ uuid }}">{{ name }}</a>
+        {% endfor %}
+        {% endif %}
+        {% if folder_id != "/" %}
+        <a class="path-info" id="{{ folder_id }}" href="/index/{{ folder_id }}">当前文件夹</a>
+        {% endif %}
+                </ul>
+            </div>
+        </div>
+        <!-- 实现文件夹显示 -->
+    <h2>详细信息</h2>
+    <input type="checkbox" id="chkall" onclick="chk_all()">
+    <a>|</a>
+    <a>文件名</a>
+    <a>|</a>
+    <a>创建时间</a>
+    <a>|</a>
+    <a>文件大小</a>
+    <script>
+        function chk_all() {
+            var chkall = document.getElementById('chkall').checked;
+            var checkboxes = document.querySelectorAll('input[type=checkbox]');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = chkall;
+            }
+        }
+        function chk_single() {
+            var checkboxes = document.querySelectorAll('input[type=checkbox].checkboxItem');
+            var allChecked = true;
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (!checkboxes[i].checked) {
+                    allChecked = false;
+                    break;
+                }
+            }
+            document.getElementById('chkall').checked = allChecked;
+        }
+    </script>
+        <h2 style="margin-top: 20px">文件夹</h2>
+        {% if all_dict.folders %}
+    {% for folder_item in all_dict.folders %}
+    <div type="folder" class="folder">
+        <input type="checkbox" class="checkboxItem folder" id="{{ folder_item.uuid }}" onclick="chk_single()">
+        <img src="/thumbnail/folder" alt="folder">
+        <a href="/index/{{ folder_item.uuid }}">{{ folder_item.name }}</a>
+        <a id="time">{{ folder_item.time }}</a>
+        {% if folder_item.password %}
+        <img src="/folder/lock" alt="lock">
+        <!-- 解密文件夹 -->
+        <button id="decryptButton{{ folder_item.uuid }}">解密此文件夹</button>
+        <!-- 模态窗口 -->
+        <div id="decryptModal{{ folder_item.uuid }}" class="decryptModal" style="display: none;">
+            <!-- 表单 -->
+            <form action="/decrypt?folder_id={{ folder_item.uuid }}" method="post" autocomplete="off">
+                <input type="text" name="password" placeholder="输入密码">
+                <input type="checkbox" id="is_permanent{{ folder_item.uuid }}" name="is_permanent" value="False">
+                <label for="option">永久删除密码</label>
+                <button id="decryptSubmit{{ folder_item.uuid }}">确认</button>
+            </form>
+            <button id="decryptCancel{{ folder_item.uuid }}">取消</button>
+        </div>
+        <script>
+            document.getElementById('is_permanent{{ folder_item.uuid }}').addEventListener('change', function () {
+                this.value = this.checked ? 'True' : 'False';
+            });
+            document.getElementById('decryptButton{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('decryptModal{{ folder_item.uuid }}').style.display = "block";
+            }
+            document.getElementById('decryptCancel{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('decryptModal{{ folder_item.uuid }}').style.display = "none";
+            }
+        </script>
+        {% else %}
+        <img src="/folder/unlock" alt="unlock">
+        <!-- 加密文件夹 -->
+        <button id="encryptButton{{ folder_item.uuid }}">加密此文件夹</button>
+        <!-- 模态窗口 -->
+        <div id="encryptModal{{ folder_item.uuid }}" class="encryptModal" style="display: none;">
+            <!-- 表单 -->
+            <form action="/encrypt?folder_id={{ folder_item.uuid }}" method="post">
+                <input type="text" name="password" placeholder="输入密码">
+                <button id="encryptSubmit{{ folder_item.uuid }}">确认</button>
+            </form>
+            <button id="encryptCancel{{ folder_item.uuid }}">取消</button>
+        </div>
+        <script>
+            document.getElementById('encryptButton{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('encryptModal{{ folder_item.uuid }}').style.display = "block";
+            }
+            document.getElementById('encryptCancel{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('encryptModal{{ folder_item.uuid }}').style.display = "none";
+            }
+        </script>
+        {% endif %}
+        <!-- 删除此文件夹 -->
+        <a href="/delete?folder_id={{ folder_item.uuid }}">删除此文件夹</a>
+        <!--重命名文件夹 -->
+        <button id="renameButton{{ folder_item.uuid }}">重命名此文件</button>
+        <!--模态窗口 -->
+        <div id="renameModal{{ folder_item.uuid }}" class="renameModal" style="display: none;">
+            <!-- 表单 -->
+            <form action="/rename?folder_id={{ folder_item.uuid }}" method="post">
+                <input type="text" name="new_folder_name" placeholder="输入新的名称">
+                <button id="renameSubmit{{ folder_item.uuid }}">确认</button>
+            </form>
+            <!-- 表单结束 -->
+            <button id="renameCancel{{ folder_item.uuid }}">取消</button>
+        </div>
+        <script>
+            document.getElementById('renameButton{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('renameModal{{ folder_item.uuid }}').style.display = "block";
+            }
+            document.getElementById('renameCancel{{ folder_item.uuid }}').onclick = function () {
+                document.getElementById('renameModal{{ folder_item.uuid }}').style.display = "none";
+            }
+        </script>
+        <!--重命名文件结束-->
+
+    </div>
+    {% endfor %}
+    {% endif %}
+    <!-- 文件夹显示结束 -->
+        <!-- 文件夹显示结束 -->
+        <!--实现文件显示 -->
+        <h2 style="margin-top: 30px">文件</h2>
+        {% if all_dict.files %}
+    {% for file_item in all_dict.files %}
+    <div type="file" class="file">
+        <input type="checkbox" class="checkboxItem file" id="{{ file_item.uuid }}" onclick=" chk_single()">
+        <img src="/thumbnail/{{ file_item.type }}" alt="file">
+        <a id="{{ file_item.uuid }}">{{ file_item.name }}</a>
+        <a id="time">{{ file_item.time }}</a>
+        <a id="size">{{ file_item.size }}</a>
+        <a href="/download?file_id={{ file_item.uuid }}">下载此文件</a>
+        <a href="/delete?file_id={{ file_item.uuid }}">删除此文件</a>
+        <!-- 重命名文件 -->
+        <button id="renameButton{{ file_item.uuid }}">重命名此文件</button>
+        <!-- 弹出窗口 -->
+        <div id="renameModal{{ file_item.uuid }}" class="renameModal" style="display: none;">
+            <!-- 表单 -->
+            <form action="/rename?file_id={{ file_item.uuid }}" method="post">
+                <input type="text" name="new_file_name" placeholder="输入新的名称">
+                <button id="renameSubmit{{ file_item.uuid }}">确认</button>
+            </form>
+            <button id="renameCancel{{ file_item.uuid }}">取消</button>
+        </div>
+    </div>
+    <!-- 重命名文件js代码 -->
+    <script>
+        document.getElementById('renameButton{{ file_item.uuid }}').onclick = function () {
+            document.getElementById('renameModal{{ file_item.uuid }}').style.display = "block";
+        }
+        document.getElementById('renameCancel{{ file_item.uuid }}').onclick = function () {
+            document.getElementById('renameModal{{ file_item.uuid }}').style.display = "none";
+        }
+    </script>
+    {% endfor %}
+    {% endif %}
+
+        <!-- 文件显示结束 -->
+        <!-- 创建文件夹 -->
+            <button id="createFolderButton{{ folder_id }}" class="button33" style="background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;">
+                创建文件夹
+            </button>
+            <!-- 模态窗口 -->
+            <div id="createFolderModal{{ folder_id }}" class="modal" class="createFolderModal" style="display: none;">
+                <div class="modal-content">
+                    <!-- 表单 -->
+                    <form action="/create_folder?folder_id={{ folder_id }}" method="post">
+                        <input type="text" name="folder_name" placeholder="输入文件夹名称">
+                        <button id="createFolderSubmit{{ folder_id }}">确认</button>
+                    </form>
+                    <!-- 表单结束 -->
+                    <button id="createFolderCancel{{ folder_id }}">取消</button>
+                </div>
+            </div>
+            <script>
+                document.getElementById('createFolderButton{{ folder_id }}').onclick = function () {
+                    document.getElementById('createFolderModal{{ folder_id }}').style.display = "block";
+                }
+                document.getElementById('createFolderCancel{{ folder_id }}').onclick = function () {
+                    document.getElementById('createFolderModal{{ folder_id }}').style.display = "none";
+                }
+            </script>
+
+        <!-- 创建文件夹结束 -->
+            <!-- 上传文件 -->
+
+
+            <!-- 显示上传表单的按钮 -->
+            <button onclick="showUploadForm()" class="button33" style="background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;">
+                上传文件
+            </button>
+            <!-- 模态窗口 -->
+            <div id="uploadModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>请上传一个或多个文件</h2>
+                    <form action="/upfile" method="post" enctype="multipart/form-data">
+                        <input type="file" name="files" multiple>
+                        <input type="submit" value="上传">
+                    </form>
+                </div>
+            </div>
+        </div>
+    <script>
+        function showUploadForm() {
+            var modal = document.getElementById('uploadModal');
+            modal.style.display = "block";
+        }
+
+        window.onload = function () {
+            var modal = document.getElementById('uploadModal');
+            var span = document.getElementsByClassName("close")[0];
+
+            span.onclick = function () {
+                modal.style.display = "none";
+            }
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+    </script>
+</div>
+</body>
+
+</html>
