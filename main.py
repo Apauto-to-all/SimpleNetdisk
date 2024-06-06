@@ -12,6 +12,7 @@ from routes import (
     index,
     folders,
     users,
+    trash,
 )  # 导入路由
 import config  # 导入配置文件
 from typing import Optional
@@ -61,6 +62,7 @@ app.include_router(files.router)  # 注册下载文件路由
 app.include_router(get_img.router)  # 注册获取图片路由
 app.include_router(folders.router)  # 注册文件夹路由
 app.include_router(users.router)  # 注册用户路由
+app.include_router(trash.router)  # 注册垃圾桶路由
 
 if __name__ == "__main__":
     import uvicorn

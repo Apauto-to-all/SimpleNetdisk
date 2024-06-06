@@ -1,7 +1,7 @@
 import os
 from typing import List, Optional
 from fastapi import APIRouter, Cookie, File, UploadFile
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 import config
 from utils import password_utils, user_utils, files_utils
@@ -79,5 +79,6 @@ async def upload_file(
 
             with open(file_path, "wb") as f:
                 f.write(contents)  # 写入文件内容
+        return {"success": "上传成功"}
 
     return {"error": "上传失败"}

@@ -3,7 +3,6 @@
 import logging
 import os
 import traceback
-import asyncpg
 
 
 # 获取日志记录器

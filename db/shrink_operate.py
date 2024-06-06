@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class ShrinkOperate:
     async def ShrinkTable_insert(self):
         """
-        插入缩略码
+        插入缩略图
         :return: 如果插入成功就返回 True，否则返回 False
         """
         sql = """

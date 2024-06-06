@@ -66,6 +66,7 @@ async def delete_file(username: str, file_id: str) -> bool:
     """
     if username and file_id:
         await db_operation.FileTable_delete(username, file_id)
+        await db_operation.TrashTable_insert(username, file_id=file_id)
         return True
     return False  # 删除失败
 
@@ -80,6 +81,7 @@ async def delete_folder(username: str, folder_id: str) -> bool:
     """
     if username and folder_id:
         await db_operation.FolderTable_delete(username, folder_id)
+        await db_operation.TrashTable_insert(username, folder_id=folder_id)
         return True
     return False  # 删除失败
 

@@ -83,3 +83,14 @@ async def change_user_password(
         await user_utils.change_user_password(username, password)
         return {"success": "修改密码成功"}
     return {"error": "请输入完整信息"}
+
+
+# 获取用户名
+@router.get("/get_username")
+async def get_username(
+    access_token: Optional[str] = Cookie(None),  # 读取 Cookie
+):
+    username = await user_utils.isLogin_getUser(access_token)
+    if not username:
+        return "用户未登入"
+    return username  # 返回用户名

@@ -1,6 +1,5 @@
 from typing import Optional
 from fastapi import APIRouter, Cookie, Form, Response
-from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from utils import password_utils, user_utils, files_utils
 
@@ -113,6 +112,7 @@ async def delete_file_folder(
                 return {"error": "文件所属的文件夹被加密，请先解密再使用"}
             if not await password_utils.verify_password(unlock_folder, lock_folder_id):
                 return {"error": "文件所属的文件夹未解密，请先解密再使用"}
+
         # 获取被删除文件的父级文件夹id
         if await files_utils.delete_file(username, file_id):
             return {"success": "删除成功"}
@@ -122,6 +122,7 @@ async def delete_file_folder(
                 return {"error": "文件夹被加密，请先解密再使用"}
             if not await password_utils.verify_password(unlock_folder, folder_id):
                 return {"error": "该文件夹未解密，请先解密再使用"}
+
         if await files_utils.delete_folder(username, folder_id):
             return {"success": "删除成功"}
 

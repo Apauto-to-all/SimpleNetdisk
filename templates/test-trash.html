@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>简云</title>
+    <link rel="stylesheet" href="../static/css/index_styles.css">
+</head>
+
+<body class="container">
+    <h2>垃圾箱页面</h2>
+    <h3>用户：<span id="username"></span></h3>
+    <script>
+        fetch('/get_username', {
+            method: 'GET',
+        })
+            .then(response => response.text())  // 将响应转换为文本
+            .then(username => {
+                document.getElementById('username').textContent = username;
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+    <label>全选</label>
+    <input type="checkbox" id="chkall" onclick="chk_all()">
+    <ul id="folders"></ul>
+    <ul id="files"></ul>
+    <script>
+        fetch('/trash/folder', {
+            method: 'GET',
+            credentials: 'include'  // 需要这个选项来发送和接收cookies
+        })
+            .then(response => response.json())  // 将响应转换为JSON
+            .then(folders => {
+                const foldersElement = document.getElementById('folders');
+                folders.forEach(folder => {
+                    const li = document.createElement('li');
+                    li.textContent = `文件夹名: ${folder.folder_name}, 放入回收站时间: ${folder.drop_time}, 删除时间: ${folder.delete_time}`;
+                    foldersElement.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        fetch('/trash/file', {
+            method: 'GET',
+            credentials: 'include'  // 需要这个选项来发送和接收cookies
+        })
+            .then(response => response.json())  // 将响应转换为JSON
+            .then(files => {
+                const filesElement = document.getElementById('files');
+                files.forEach(file => {
+                    const li = document.createElement('li');
+                    li.textContent = `文件名: ${file.file_name}, 放入回收站时间: ${file.drop_time}, 删除时间: ${file.delete_time}`;
+                    filesElement.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+
+</body>
+
+</html>

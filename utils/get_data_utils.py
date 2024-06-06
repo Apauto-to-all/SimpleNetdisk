@@ -56,7 +56,7 @@ async def get_folder_path(username: str, folder_id: str) -> dict:
 
 
 # 获取垃圾桶文件夹
-def get_trash_folders(username: str) -> list:
+async def get_trash_folders(username: str) -> list:
     """
     获取垃圾桶文件夹，uuid+文件夹名+删除剩余时间
     :param username: 用户名
@@ -73,30 +73,6 @@ def get_trash_folders(username: str) -> list:
                 "uuid2": "9339848c-b14c-482f-8c46-5f7cc4a64a97",
                 "name2": "name2",
                 "time2": "time2",
-            },
-        ]
-
-
-# 获取垃圾桶文件
-def get_trash_files(username: str) -> list:
-    """
-    获取垃圾桶文件，uuid+文件名+文件类型+删除剩余时间
-    :param username: 用户名
-    :return: 垃圾桶文件字典
-    """
-    if username:
-        return [
-            {
-                "uuid": "c6f414e2-08c0-4aac-849f-2e03640e5d42",  # 文件id
-                "name": "name",  # 文件名
-                "type": "type",  # 文件类型
-                "time": "time",  # 删除剩余时间
-            },
-            {
-                "uuid": "c2f6aa56-4c38-41f8-9d7a-a54ad42f178a",
-                "name": "name2",
-                "type": "type",
-                "time": "time2",
             },
         ]
 
@@ -156,17 +132,6 @@ async def get_all_user(username: str) -> dict:
         all_user_dict["capacity_used"]
     )  # 将KB转换为MB，GB，保留两位小数
     return all_user_dict
-
-
-async def get_all_trash(username: str) -> dict:
-    """
-    :param username: 用户名
-    :return: 返回页面所有文件的内容
-    """
-    all_dict = {}
-    all_dict["trash_folders"] = get_trash_folders(username)
-    all_dict["trash_files"] = get_trash_files(username)
-    return all_dict
 
 
 # 2024-06-04 15:35:22.276136，时间转换为中文的年月日
