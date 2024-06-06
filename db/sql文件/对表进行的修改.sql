@@ -32,8 +32,6 @@ DROP USER simple_cloud_user;
 -- 创建用户并将角色授权给用户
 CREATE USER simple_cloud_user 
 WITH PASSWORD 'BiYCR@@Vbkk32$QnbT*VPR&x$Hiy6N';
+
 GRANT select_update_insert_role TO simple_cloud_user;
-
-GRANT DELETE ON Trash TO trash_delete_role;
-
 GRANT trash_delete_role TO simple_cloud_user;
