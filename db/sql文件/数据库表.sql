@@ -133,7 +133,6 @@ create table Trash(
 	Fideltime timeDomain,--文件删除时间
 	primary key (Uname, Fid),
 	foreign key (Uname) references Users(Uname),
-	foreign key (Uname, Fid) references Files(Uname, Fid)
 );
 
 --缩略图表
