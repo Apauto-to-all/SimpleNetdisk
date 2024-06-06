@@ -1,5 +1,6 @@
+from pydantic import BaseModel
 import config
-from typing import Optional
+from typing import List, Optional
 from fastapi import APIRouter, Cookie, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -75,3 +76,48 @@ async def get_trash_file(
     ]
     """
     return await trash_utils.get_trash_files(username)
+
+
+class FItems(BaseModel):
+    folders: List[str]
+    files: List[str]
+
+
+# 还原文件和文件夹
+@router.post("/restore")
+async def restore_items(
+    items: FItems,
+    access_token: Optional[str] = Cookie(None),
+):
+    username = await user_utils.isLogin_getUser(access_token)
+    if not username:
+        return {"error": "请先登录"}
+    if not items.folders and not items.files:
+        return {"error": "请选择要还原的文件或文件夹"}
+    try:
+        await trash_utils.restore_files_and_folders(
+            username, {"folders": items.folders, "files": items.files}
+        )  # 还原文件和文件夹
+        return {"success": "还原成功"}
+    except Exception as e:
+        return {"error": "还原失败"}
+
+
+# 永久删除文件和文件夹
+@router.post("/delete_forever")
+async def delete_forever_items(
+    items: FItems,
+    access_token: Optional[str] = Cookie(None),
+):
+    username = await user_utils.isLogin_getUser(access_token)
+    if not username:
+        return {"error": "请先登录"}
+    if not items.folders and not items.files:
+        return {"error": "请选择要删除的文件或文件夹"}
+    try:
+        await trash_utils.delete_forever_files_and_folders(
+            username, {"folders": items.folders, "files": items.files}
+        )  # 永久删除文件和文件夹
+        return {"success": "删除成功"}
+    except Exception as e:
+        return {"error": "删除失败"}

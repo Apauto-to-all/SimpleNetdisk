@@ -21,6 +21,7 @@ async def get_file_type(file_name: str) -> str:
 
 
 class FileOperate:
+    # 插入文件到文件表
     async def FileTable_insert(
         self,
         username: str,
@@ -59,6 +60,7 @@ class FileOperate:
             logger.error(error_info)
             logger.error(e)
 
+    # 验证文件是否为用户所有
     async def FileTable_verify(self, username: str, file_id: str) -> bool:
         """
         验证文件是否存在
@@ -111,6 +113,31 @@ class FileOperate:
                         }
                     )
                 return files_list
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return []
+
+    # 获取到父类文件夹下的所有文件id
+    async def FileTable_get_all_file_id_from_parent_folder(
+        self, username: str, parent_folder: str
+    ) -> list:
+        """
+        获取到父类文件夹下的所有文件id
+        :param username: 用户名
+        :param parent_folder: 父文件夹id
+        :return: 文件id列表
+        """
+        sql = """
+        SELECT Fid
+        FROM Files
+        WHERE Uname = $1 AND Foid = $2 AND Fifdel = false
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.fetch(sql, username, parent_folder)
+                return [i.get("fid") for i in result] if result else []
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)
@@ -184,6 +211,26 @@ class FileOperate:
         update_sql = """
         UPDATE Files
         SET Fifdel = true
+        WHERE Uname = $1 AND Fid = $2
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                await connection.execute(update_sql, username, file_id)
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+
+    # 还原文件，设置Fifdel为false
+    async def FileTable_restore_file(self, username: str, file_id: str):
+        """
+        还原文件，设置Fifdel为false
+        :param username: 用户名
+        :param file_id: 文件id
+        """
+        update_sql = """
+        UPDATE Files
+        SET Fifdel = false
         WHERE Uname = $1 AND Fid = $2
         """
         try:
@@ -268,6 +315,49 @@ class FileOperate:
             logger.error(e)
             return False
 
+    # 文件复制次数减一
+    async def FileTable_update_cpnums_minus_one(self, username: str, file_path: str):
+        """
+        文件复制次数减一，如果为0或空就不修改
+        :param username: 用户名
+        :param file_path: 文件路径
+        """
+        update_sql = """
+        UPDATE Files
+        SET Copytimes = Copytimes - 1
+        WHERE Uname = $1 AND Fipath = $2 AND Copytimes IS NOT NULL AND Copytimes > 0;
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                await connection.execute(update_sql, username, file_path)
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+
+    # 获取到文件的复制次数
+    async def FileTable_get_cpnums(self, username: str, file_id: str) -> int:
+        """
+        获取到文件的复制次数
+        :param username: 用户名
+        :param file_id: 文件id
+        :return: 复制次数
+        """
+        sql = """
+        SELECT Copytimes
+        FROM Files
+        WHERE Uname = $1 AND Fid = $2
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.fetch(sql, username, file_id)
+                return result[0].get("copytimes") if result else 0
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return 0
+
 
 """
 --文件表
@@ -280,6 +370,7 @@ create table Files(
 	Fifdel ifDomain,--文件是否被删除
 	FiKB CapacityDomain,--文件大小
 	Fipath PathDomain,--文件路径
+	Copytimes CapacityDomain,
 	primary key (Uname, Fid),
     foreign key (Uname, Foid) references Folders(Uname, Foid),
     foreign key (Uname) references Users(Uname)

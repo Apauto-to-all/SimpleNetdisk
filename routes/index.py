@@ -24,6 +24,9 @@ async def index(
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
     unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
+    # 如果链接中有查询参数，删除查询参数，重定向到没有查询参数的链接
+    if request.url.query:
+        return RedirectResponse(url=request.url.path, status_code=303)
     username = await user_utils.isLogin_getUser(access_token)  # 从 JWT 中获取用户名
     if not username:  # 判断是否登录
         response = RedirectResponse(url="/login", status_code=303)

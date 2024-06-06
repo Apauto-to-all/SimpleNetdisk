@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class FolderOperate:
-
+    # 插入文件夹
     async def FolderTable_insert(
         self,
         username: str,
@@ -166,6 +166,42 @@ class FolderOperate:
             logger.error(e)
             return []
 
+    # 父类文件夹下的所有文件夹id，包括子类文件夹，再子类文件夹下的文件夹id，返回一个列表
+    async def FolderTable_get_all_folder_id(
+        self, username: str, parent_folder: str
+    ) -> list:
+        """
+        父类文件夹下的所有文件夹id，包括子类文件夹，再子类文件夹下的文件夹id，返回一个列表
+        :param username: 用户名
+        :param parent_folder: 父文件夹
+        :return: 父类文件夹下的所有文件夹id，包括子类文件夹，再子类文件夹下的文件夹id
+        """
+        sql = """
+        WITH RECURSIVE subfolders AS (
+        SELECT Foid
+        FROM folders
+        WHERE Uname = $1 AND Faid = $2
+        UNION ALL
+        SELECT f.Foid
+        FROM folders f
+        INNER JOIN subfolders sf ON f.Faid = sf.Foid
+        )
+        SELECT Foid FROM subfolders;
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                list_folder = []
+                result = await connection.fetch(sql, username, parent_folder)
+                if result:
+                    for i in result:
+                        list_folder.append(i["foid"])
+                return list_folder
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return []
+
     # 获取父级文件夹id
     async def FolderTable_get_parent_folder_id(
         self, username: str, folder_id: str
@@ -229,6 +265,26 @@ class FolderOperate:
         try:
             async with self.pool.acquire() as connection:
                 await connection.execute(delete_sql, username, folder_id)
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+
+    # 还原文件夹
+    async def FolderTable_restore_folder(self, username: str, folder_id: str):
+        """
+        还原文件夹
+        :param username: 用户名
+        :param folder_id: 文件夹id
+        """
+        update_sql = """
+        UPDATE folders
+        SET Foifdel = false
+        WHERE Uname = $1 AND Foid = $2
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                await connection.execute(update_sql, username, folder_id)
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)
@@ -304,6 +360,7 @@ class FolderOperate:
             logger.error(error_info)
             logger.error(e)
 
+    # 验证文件夹下是否存在文件夹
     async def FolderTable_has_folder(self, username: str, folder_id: str) -> bool:
         """
         验证文件夹下是否存在文件夹
