@@ -8,3 +8,10 @@ SCHEMA public TO select_update_insert_role;
 CREATE USER simple_cloud_user 
 WITH PASSWORD 'BiYCR@@Vbkk32$QnbT*VPR&x$Hiy6N';
 GRANT select_update_insert_role TO simple_cloud_user;
+
+-- 创建角色并赋予删除权限
+CREATE ROLE trash_delete_role;
+GRANT DELETE ON Trash TO trash_delete_role;
+
+-- 将角色授予用户
+GRANT trash_delete_role TO simple_cloud_user;
