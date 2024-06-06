@@ -131,8 +131,8 @@ create table Trash(
 	ForFi ifDomain,--文件还是文件夹
 	Ptime timeDomain,--放入回收站时间
 	Fideltime timeDomain,--文件删除时间
-	primary key (Uname, Fid),
-	foreign key (Uname) references Users(Uname),
+	primary key (Uname),
+	foreign key (Uname) references Users(Uname)
 );
 
 --缩略图表
