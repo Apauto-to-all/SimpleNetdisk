@@ -46,6 +46,9 @@ create domain ifDomain boolean
 	DEFAULT FALSE;
 --创建Fopasswd域，varchar类型，长度为60，文件夹密码
 create domain FopasswdDomain varchar(60);
+--创建Copytimes域，smallint类型，文件夹被复制次数/文件被复制次数
+create domain CopytimesDomain smallint
+  constraint Copytimes_constraint DEFAULT 0;
 
 --垃圾桶表相关域
 --创建time域，timestamp类型，放入回收站时间/文件删除时间/密匙表过期时间
@@ -119,6 +122,7 @@ create table Files(
 	Fifdel ifDomain,--文件是否被删除
 	FiKB CapacityDomain,--文件大小
 	Fipath PathDomain,--文件路径
+	Copytimes CapacityDomain,
 	primary key (Uname, Fid),
     foreign key (Uname, Foid) references Folders(Uname, Foid),
     foreign key (Uname) references Users(Uname)
