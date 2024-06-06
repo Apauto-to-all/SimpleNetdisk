@@ -127,7 +127,7 @@ create table Files(
 --垃圾桶表
 create table Trash(
 	Uname UnameDomain,--用户名
-	Fid FidDomain,--文件id
+	Fshareid FidDomain,--文件id和文件夹id
 	ForFi ifDomain,--文件还是文件夹
 	Ptime timeDomain,--放入回收站时间
 	Fideltime timeDomain,--文件删除时间
