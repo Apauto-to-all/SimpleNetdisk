@@ -23,11 +23,6 @@ class FolderOperate:
         :param parent_folder_id: 父文件夹id
         :param folder_name: 文件夹名
         """
-        sql_select_parent_folder_relation = """
-        SELECT Relation
-        FROM folders
-        WHERE Uname = $1 AND Foid = $2
-        """
         sql = """
         INSERT INTO folders(Uname, Foid, Faid, Foname, Foctime, Relation)
         VALUES($1, $2, $3, $4, now(), $5)
@@ -35,19 +30,16 @@ class FolderOperate:
         try:
             async with self.pool.acquire() as connection:
                 folder_relation = None
-                if (
-                    parent_folder_id and parent_folder_id != "/"
-                ):  # 如果父文件夹id不为空，且不为根目录
-                    parent_folder_relation = await connection.fetch(
-                        sql_select_parent_folder_relation,
-                        username,
-                        parent_folder_id,
+                # 如果父文件夹id不为空，且不为根目录
+                if parent_folder_id and parent_folder_id != "/":
+                    parent_folder_relation = await self.FolderTable_get_relation(
+                        username, parent_folder_id
+                    )  # 获取父文件夹的层级关系
+                    folder_relation = (
+                        parent_folder_relation + parent_folder_id
+                        if parent_folder_relation
+                        else parent_folder_id
                     )
-                    if parent_folder_relation:
-                        folder_relation = (
-                            parent_folder_relation[0]["relation"] or ""
-                        )  # 获取父文件夹的层级关系
-                        folder_relation += parent_folder_id  # 添加父文件夹id
                 await connection.execute(
                     sql,
                     username,
@@ -194,6 +186,35 @@ class FolderOperate:
             logger.error(error_info)
             logger.error(e)
             return {}
+
+    # 获取文件夹下的所有文件夹id，返回一个列表
+    async def FolderTable_get_all_file_id_from_parent_folder(
+        self, username: str, parent_folder: str
+    ) -> list:
+        """
+        获取文件夹下的所有文件夹id，返回一个列表
+        :param username: 用户名
+        :param parent_folder: 父文件夹
+        :return: 文件夹下的所有文件夹id
+        """
+        sql = """
+        SELECT Foid
+        FROM folders
+        WHERE Uname = $1 AND Faid = $2 AND Foifdel = false
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                list_folder = []
+                result = await connection.fetch(sql, username, parent_folder)
+                if result:
+                    for i in result:
+                        list_folder.append(i["foid"])
+                return list_folder
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return []
 
     # 父类文件夹下的所有文件夹id，包括子类文件夹，再子类文件夹下的文件夹id，返回一个列表
     async def FolderTable_get_all_folder_id(
@@ -439,6 +460,93 @@ class FolderOperate:
             logger.error(error_info)
             logger.error(e)
             return False
+
+    # 移动文件夹
+    async def FolderTable_move_folder(
+        self, username: str, target_folder_id: str, folder_id: str
+    ):
+        """
+        移动文件夹
+        :param username: 用户名
+        :param target_folder_id: 目标文件夹id
+        :param folder_id: 文件夹id
+        """
+        update_sql = """
+        UPDATE Folders
+        SET Faid = $3, Relation = $4
+        WHERE Uname = $1 AND Foid = $2
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                new_relation = None
+                if target_folder_id and target_folder_id != "/":
+                    # 获取 target_folder_id 的 Relation
+                    target_relation = await self.FolderTable_get_relation(
+                        username, target_folder_id
+                    )
+                    # 构建新的 Relation 值
+                    new_relation = (
+                        target_relation + target_folder_id
+                        if target_relation
+                        else target_folder_id
+                    )
+                # 更新 folder_id 的 Faid 和 Relation
+                await connection.execute(
+                    update_sql, username, folder_id, target_folder_id, new_relation
+                )
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+
+    # 复制文件夹
+    async def FolderTable_copy_folder(
+        self,
+        username: str,
+        target_folder_id: str,
+        folder_id: str,
+        new_folder_id: str,
+    ):
+        """
+        复制文件夹
+        :param username: 用户名
+        :param target_folder_id: 目标文件夹id
+        :param folder_id: 文件夹id
+        :param new_folder_id: 新文件夹id
+        """
+        insert_sql = """
+        INSERT INTO Folders(Uname, Foid, Faid, Foname, Foctime, Relation, Fopasswd)
+        SELECT Uname, $3, $4, Foname, now(), $5, null
+        FROM Folders
+        WHERE Uname = $1 AND Foid = $2
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                new_relation = None
+                if target_folder_id and target_folder_id != "/":
+                    # 获取 target_folder_id 的 Relation
+                    target_relation = await self.FolderTable_get_relation(
+                        username, target_folder_id
+                    )
+                    # 构建新的 Relation 值
+                    new_relation = (
+                        target_relation + target_folder_id
+                        if target_relation
+                        else target_folder_id
+                    )
+                # 复制文件夹
+                await connection.execute(
+                    insert_sql,
+                    username,
+                    folder_id,
+                    new_folder_id,
+                    target_folder_id,
+                    new_relation,
+                )
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
 
 
 """

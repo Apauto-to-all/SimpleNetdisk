@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Cookie, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-from utils import user_utils, cpMove_utils
+from utils import files_utils, password_utils, user_utils, cpMove_utils
 
 router = APIRouter()
 
@@ -30,6 +30,7 @@ async def get_folders(
     parent_folder_id: Optional[str] = None,  # 添加查询参数
     folders_id: Optional[str] = Cookie(None),  # 读取 Cookie，获取需要操作的文件夹id列表
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie
+    unlock_folder: Optional[str] = Cookie(None),  # 解密文件夹
 ):
     if not parent_folder_id:
         return {}
@@ -46,6 +47,16 @@ async def get_folders(
         username,
         parent_folder_id,
     )
+    for folder_id in list(dict_folders.keys()):
+        if folder_id != "/" and await files_utils.is_folder_encrypted(
+            username, folder_id
+        ):
+            # 合并条件：如果文件夹被加密且（没有解密或解密失败），移除这个文件夹
+            if not unlock_folder or not await password_utils.verify_password(
+                unlock_folder, folder_id
+            ):
+                dict_folders.pop(folder_id)
+
     # 将JSON字符串解析为Python列表
     folders_id_list = json.loads(folders_id) if folders_id else []
     # 如果需要复制或移动的文件夹在当前文件夹下，删掉
@@ -120,9 +131,9 @@ async def move_to_folder(
     # 将JSON字符串解析为Python列表
     files_id_list = json.loads(files_id) if files_id else []
     folders_id_list = json.loads(folders_id) if folders_id else []
-    # await cpMove_utils.move_files_and_folders(
-    #     username, target_folder_id, files_id_list, folders_id_list
-    # )
+    await cpMove_utils.move_files_and_folders(
+        username, target_folder_id, files_id_list, folders_id_list
+    )
     return (
         RedirectResponse(url="/index", status_code=303)
         if target_folder_id == "/"
@@ -149,9 +160,9 @@ async def copy_to_folder(
     # 将JSON字符串解析为Python列表
     files_id_list = json.loads(files_id) if files_id else []
     folders_id_list = json.loads(folders_id) if folders_id else []
-    # await cpMove_utils.copy_files_and_folders(
-    #     username, target_folder_id, files_id_list, folders_id_list
-    # )
+    await cpMove_utils.copy_files_and_folders(
+        username, target_folder_id, files_id_list, folders_id_list
+    )
     return (
         RedirectResponse(url="/index", status_code=303)
         if target_folder_id == "/"

@@ -41,8 +41,8 @@ class FileOperate:
         :param file_path: 文件路径
         """
         sql = """
-        INSERT INTO Files(Uname, Fid, Foid, Finame, Fictime, FiKB, Fipath)
-        VALUES($1, $2, $3, $4, now(), $5, $6)
+        INSERT INTO Files(Uname, Fid, Foid, Finame, Fictime, FiKB, Fipath, Copytimes)
+        VALUES($1, $2, $3, $4, now(), $5, $6, 0)
         """
         try:
             async with self.pool.acquire() as connection:
@@ -91,7 +91,15 @@ class FileOperate:
         从父类文件夹文件夹id中获取文件
         :param username: 用户名
         :param parent_folder: 父文件夹id
-        :return: 文件列表
+        :return: [
+            {
+                "uuid": 文件id,
+                "name": 文件名,
+                "size": 文件大小,
+                "type": 文件类型,
+                "time": 文件创建时间
+            }
+        ]
         """
         sql = """
         SELECT Fid, Finame, FiKB, Fictime
@@ -127,7 +135,7 @@ class FileOperate:
         获取到父类文件夹下的所有文件id
         :param username: 用户名
         :param parent_folder: 父文件夹id
-        :return: 文件id列表
+        :return: 文件id列表，["uuid1", "uuid2", "uuid3"]
         """
         sql = """
         SELECT Fid
@@ -357,6 +365,89 @@ class FileOperate:
             logger.error(error_info)
             logger.error(e)
             return 0
+
+    # 移动文件到新的文件夹
+    async def FileTable_move_file(
+        self, username: str, target_folder_id: str, file_id: str
+    ):
+        """
+        移动文件到新的文件夹
+        :param username: 用户名
+        :param target_folder_id: 目标文件夹id
+        :param file_id: 文件id
+        """
+        update_sql = """
+        UPDATE Files
+        SET Foid = $3
+        WHERE Uname = $1 AND Fid = $2
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                await connection.execute(
+                    update_sql, username, file_id, target_folder_id
+                )
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+
+    # 复制文件到新的文件夹
+    async def FileTable_copy_file(
+        self, username: str, target_folder_id: str, file_id: str, new_file_id: str
+    ):
+        """
+        复制文件到新的文件夹
+        :param username: 用户名
+        :param target_folder_id: 目标文件夹id
+        :param file_id: 文件id
+        :param new_file_id: 新文件id
+        """
+        # 首先，获取原文件的路径
+        get_path_sql = """
+        SELECT Fipath
+        FROM Files
+        WHERE Uname = $1 AND Fid = $2
+        """
+        insert_sql = """
+        INSERT INTO Files(Uname, Fid, Foid, Finame, Fictime, Fifdel, FiKB, Fipath, Copytimes)
+        SELECT Uname, $3, $4, Finame, now(), Fifdel, FiKB, Fipath, Copytimes
+        FROM Files
+        WHERE Uname = $1 AND Fid = $2
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                # 执行复制操作
+                await connection.execute(
+                    insert_sql, username, file_id, new_file_id, target_folder_id
+                )
+                # 获取原文件路径
+                file_path = await connection.fetchval(get_path_sql, username, file_id)
+                # 更新复制次数，假设 file_path 已经正确获取
+                await self.FileTable_update_cpnums_plus_one(username, file_path)
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+
+    # 更新文件的复制次数加一
+    async def FileTable_update_cpnums_plus_one(self, username: str, file_path: str):
+        """
+        更新文件的复制次数加一
+        :param username: 用户名
+        :param file_path: 文件路径
+        """
+        update_sql = """
+        UPDATE Files
+        SET Copytimes = Copytimes + 1
+        WHERE Uname = $1 AND Fipath = $2
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                await connection.execute(update_sql, username, file_path)
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
 
 
 """

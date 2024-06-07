@@ -1,5 +1,6 @@
 from utils import uuid_utils
-from db.connection import DatabaseOperation  # 导入数据库操作类
+from db.connection import DatabaseOperation
+from utils import files_utils
 
 db_operation = DatabaseOperation()  # 实例化数据库操作类
 
@@ -80,6 +81,7 @@ async def get_folder_name(username: str, folder_id: str) -> str:
     return await db_operation.FolderTable_get_name(username, folder_id)
 
 
+# 获取页面所有文件的内容
 async def get_all(username: str, folder_id: str) -> dict:
     """
     :param username: 用户名
@@ -104,6 +106,7 @@ async def get_all(username: str, folder_id: str) -> dict:
     return all_dict
 
 
+# 获取用户昵称，用户头像路径，用户总容量，用户已使用容量，用户容量百分比
 async def get_all_user(username: str) -> dict:
     """
     获取用户昵称，用户头像路径，用户总容量，用户已使用容量，用户容量百分比
@@ -133,3 +136,31 @@ async def convert_time_to_chinese(time_str: str) -> str:
     # 格式化为中文的年月日
     chinese_date = time_str.strftime("%Y年%m月%d日")
     return chinese_date
+
+
+# 获取新文件id
+async def get_new_file_id(username: str) -> str:
+    """
+    获取新文件id
+    :return: 新文件id
+    """
+    new_file_id = await uuid_utils.get_uuid()  # 生成文件id
+    while await files_utils.verify_file_is_user(
+        username, new_file_id
+    ):  # 如果文件id已经存在，重新生成，直到文件id不存在
+        new_file_id = await uuid_utils.get_uuid()
+    return new_file_id
+
+
+# 获取新文件夹id
+async def get_new_folder_id(username: str) -> str:
+    """
+    获取新文件夹id
+    :return: 新文件夹id
+    """
+    new_folder_id = await uuid_utils.get_uuid()  # 生成文件夹id
+    while await files_utils.verify_folder_is_user(
+        username, new_folder_id
+    ):  # 如果文件夹id已经存在，重新生成，直到文件夹id不存在
+        new_folder_id = await uuid_utils.get_uuid()
+    return new_folder_id

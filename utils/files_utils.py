@@ -1,6 +1,6 @@
 # 验证文件夹id是否为用户的文件夹
 import os
-from utils import password_utils, uuid_utils
+from utils import get_data_utils, password_utils
 import config
 from db.connection import DatabaseOperation  # 导入数据库操作类
 
@@ -19,6 +19,7 @@ async def is_folder_has_folder(username: str, folder_id: str) -> bool:
     return False
 
 
+# 验证文件夹id是否为用户的文件夹
 async def verify_folder_is_user(username: str, folder_id: str) -> bool:
     """
     验证文件夹id是否为用户的文件夹
@@ -31,6 +32,7 @@ async def verify_folder_is_user(username: str, folder_id: str) -> bool:
     return False
 
 
+# 验证文件id是否为用户的文件
 async def verify_file_is_user(username: str, file_id: str) -> bool:
     """
     验证文件id是否为用户的文件
@@ -216,9 +218,9 @@ async def create_folder_get_folder_id(
     :return: 文件夹id
     """
     if username and parent_folder_id and folder_name:
-        new_folder_id = await uuid_utils.get_uuid()
-        while await verify_folder_is_user(username, new_folder_id):
-            new_folder_id = await uuid_utils.get_uuid()
+        new_folder_id = await get_data_utils.get_new_folder_id(
+            username
+        )  # 获取新文件夹id
         folder_name = await auto_rename_folder(
             username, parent_folder_id, folder_name
         )  # 重命名文件夹，如果文件夹名重复，则重命名
@@ -242,12 +244,7 @@ async def save_file_get_file_id(
     :return: 文件id
     """
     if username and file_name and parent_folder:  # 保存文件
-        new_file_id = await uuid_utils.get_uuid()  # 生成文件id
-        while await verify_file_is_user(
-            username, new_file_id
-        ):  # 如果文件id已经存在，重新生成，直到文件id不存在
-            new_file_id = await uuid_utils.get_uuid()
-
+        new_file_id = await get_data_utils.get_new_file_id(username)  # 获取新文件id
         user_all_file_path = os.path.join(
             config.user_files_path, username
         )  # 用户的文件夹
