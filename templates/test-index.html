@@ -654,17 +654,18 @@
             fetch('/upfile?folder_id={{ folder_id }}', {
                 method: 'POST',
                 body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        // 刷新页面
-                        location.reload();
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+            }).then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url; // 如果有重定向，跟随到新的URL
+                    return;
+                } else {
+                    response.json().then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        }
+                    });
+                }
+            }).catch(error => console.error('Error:', error));
         });
         function showUploadForm() {
             var modal = document.getElementById('uploadModal');
