@@ -4,7 +4,7 @@ from fastapi import APIRouter, Cookie, File, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 import config
-from utils import password_utils, user_utils, files_utils
+from utils import password_utils, user_utils, files_utils, get_data_utils
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -66,6 +66,14 @@ async def upload_file(
             file_size_kb = round(
                 file_size_bytes / 1024, 2
             )  # 文件大小（KB），保留两位小数
+            # 最大上传文件大小限制
+            max_upload_file_size_kb = await files_utils.get_max_upload_file_size_kb(
+                username
+            )
+            if file_size_kb > max_upload_file_size_kb:
+                return {
+                    "error": f"文件大小超过限制，{await get_data_utils.convert_kb_to_human_readable(max_upload_file_size_kb)}"
+                }
             if await files_utils.verify_capacity_exceeded(username, file_size_kb):
                 return {"error": "容量不足，请清理文件后再上传"}
             # 保存文件，获取文件id，并更新用户已使用容量

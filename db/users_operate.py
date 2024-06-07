@@ -205,6 +205,29 @@ class UsersOperate:
             logger.error(e)
             return False
 
+    # 获取用户最大上传文件大小
+    async def UsersTable_select_max_upload_file_size(self, username: str) -> int:
+        """
+        获取用户最大上传文件大小
+        :param username: 用户名
+        :return: 返回用户最大上传文件大小
+        """
+        sql = """
+        SELECT Mupfile
+        FROM Users
+        INNER JOIN Grades ON Users.Grade = Grades.Grade
+        WHERE Uname = $1;
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.fetch(sql, username)
+                return result[0].get("mupfile") if result else 0
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return 0
+
 
 """
 --等级表

@@ -24,6 +24,8 @@ async def change_user_avatar(
         return response
 
     file_contents = await avatarFile.read()
+    if file_contents > 4 * 10240:  # 限制文件大小为 4MB
+        return {"error": "文件大小不能超过 4MB"}
     # 将文件转化为jpg文件，100*100大小
     # 将文件内容转换为图像
     image = Image.open(BytesIO(file_contents))

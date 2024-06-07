@@ -339,3 +339,15 @@ async def auto_rename_folder(
             new_folder_name = f"{folder_name}_{counter}"
             counter += 1
     return new_folder_name
+
+
+# 获取上传文件的最大大小
+async def get_max_upload_file_size_kb(username: str) -> int:
+    """
+    获取上传文件的最大大小
+    :param username: 用户名
+    :return: 最大大小
+    """
+    if username:
+        return await db_operation.UsersTable_select_max_upload_file_size(username)
+    return 0
