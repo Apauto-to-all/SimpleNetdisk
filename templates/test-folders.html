@@ -4,45 +4,98 @@
 <head>
     <title>文件树</title>
     <style>
-        .file::before {
-            content: "📄 ";
+        .icon::before {
+            content: "📁 ";
         }
 
-        .folder::before {
-            content: "📁 ";
+        .folder {
+            margin-left: 20px;
+        }
+
+        .toggle {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            margin-right: 5px;
+            border: 1px solid black;
+            cursor: pointer;
         }
     </style>
 </head>
 
 <body>
     <div id="file-tree"></div>
-
     <script>
-        // 获取文件树的数据
-        fetch('/file_tree')
-            .then(response => response.json())
-            .then(data => {
-                // 生成文件树
-                const fileTree = document.getElementById('file-tree');
-                fileTree.innerHTML = generateFileTree(data);
-            });
-
-        // 生成文件树的 HTML
-        function generateFileTree(data, level = 0) {
-            let html = '';
-            for (const name in data) {
-                const item = data[name];
-                if (item === null) {
-                    // 文件
-                    html += '<div class="file" style="margin-left: ' + (level * 20) + 'px;">' + name + '</div>';
+        async function getFolders(parentFolderId = '/') {
+            try {
+                const response = await fetch(`/getfolders?parent_folder_id=${parentFolderId}`, {
+                    method: 'GET',
+                    // 需要添加适当的headers，例如用于认证的Cookie
+                });
+                const folders = await response.json();
+                if (response.ok) {
+                    return folders;
                 } else {
-                    // 文件夹
-                    html += '<div class="folder" style="margin-left: ' + (level * 20) + 'px;">' + name + '</div>';
-                    html += generateFileTree(item, level + 1);
+                    throw new Error('Failed to fetch folders');
                 }
+            } catch (error) {
+                console.error('Error fetching folders:', error);
+                return {};
             }
-            return html;
         }
+
+        async function buildFileTree(parentFolderId, parentElement, level = 0) {
+            const folders = await getFolders(parentFolderId);
+            if (Object.keys(folders).length === 0) {
+                const noFolderMsg = document.createElement('div');
+                noFolderMsg.textContent = '无文件夹';
+                parentElement.appendChild(noFolderMsg);
+            } else {
+                Object.entries(folders).forEach(([uuid, folderName]) => {
+                    const folderElement = document.createElement('div');
+                    folderElement.className = 'folder';
+                    folderElement.style.marginLeft = `${level * 20}px`;
+
+                    const toggleButton = document.createElement('span');
+                    toggleButton.className = 'toggle';
+                    toggleButton.textContent = '+';
+                    toggleButton.onclick = function (event) {
+                        event.stopPropagation(); // 防止事件冒泡
+                        if (toggleButton.textContent === '+') {
+                            // 展开子文件夹
+                            buildFileTree(uuid, folderElement, level + 1).then(() => {
+                                toggleButton.textContent = '-';
+                            });
+                        } else {
+                            // 收起子文件夹
+                            while (folderElement.lastChild !== folderNameElement) {
+                                folderElement.removeChild(folderElement.lastChild);
+                            }
+                            toggleButton.textContent = '+';
+                        }
+                    };
+
+                    const iconElement = document.createElement('span');
+                    iconElement.className = 'icon';
+
+                    const folderNameElement = document.createElement('span');
+                    folderNameElement.textContent = ` ${folderName}`;
+
+                    folderElement.appendChild(toggleButton);
+                    folderElement.appendChild(iconElement); // 将图标元素添加到folderElement中，紧跟在toggleButton之后
+                    folderElement.appendChild(folderNameElement);
+
+                    parentElement.appendChild(folderElement);
+                });
+            }
+        }
+
+        window.onload = function () {
+            const fileTreeRoot = document.getElementById('file-tree');
+            buildFileTree('/', fileTreeRoot);
+        };
     </script>
 </body>
 

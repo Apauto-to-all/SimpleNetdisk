@@ -166,6 +166,35 @@ class FolderOperate:
             logger.error(e)
             return []
 
+    # 获取父类文件夹下的所有文件夹
+    async def FolderTable_get_all_folders_from_parent_folder_cpMove(
+        self, username: str, parent_folder: str
+    ) -> dict:
+        """
+        获取父类文件夹下的所有文件夹
+        :param username: 用户名
+        :param parent_folder: 父文件夹
+        :return: 父类文件夹下的所有文件夹，返回一个字典，键为文件夹id，值为文件夹名
+        """
+        sql = """
+        SELECT Foid, Foname
+        FROM folders
+        WHERE Uname = $1 AND Faid = $2 AND Foifdel = false
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.fetch(sql, username, parent_folder)
+                list_folder = {}
+                if result:
+                    for i in result:
+                        list_folder[i.get("foid")] = i.get("foname")
+                return list_folder
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return {}
+
     # 父类文件夹下的所有文件夹id，包括子类文件夹，再子类文件夹下的文件夹id，返回一个列表
     async def FolderTable_get_all_folder_id(
         self, username: str, parent_folder: str
