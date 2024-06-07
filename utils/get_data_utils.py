@@ -55,28 +55,6 @@ async def get_folder_path(username: str, folder_id: str) -> dict:
         return dict_path
 
 
-# 获取垃圾桶文件夹
-async def get_trash_folders(username: str) -> list:
-    """
-    获取垃圾桶文件夹，uuid+文件夹名+删除剩余时间
-    :param username: 用户名
-    :return: 垃圾桶文件夹字典
-    """
-    if username:
-        return [
-            {
-                "uuid": "979575c3-3ebe-465e-9f1e-f176fe321003",  # 文件夹id
-                "name": "name",  # 文件夹名
-                "time": "time",  # 删除剩余时间
-            },
-            {
-                "uuid2": "9339848c-b14c-482f-8c46-5f7cc4a64a97",
-                "name2": "name2",
-                "time2": "time2",
-            },
-        ]
-
-
 async def convert_kb_to_human_readable(file_size_kb: int) -> str:
     """
     将KB转换为MB，GB，保留两位小数
@@ -89,6 +67,17 @@ async def convert_kb_to_human_readable(file_size_kb: int) -> str:
         return f"{file_size_kb / 1024:.2f}MB"
     else:
         return f"{file_size_kb / 1024 / 1024:.2f}GB"
+
+
+# 从文件夹id获取文件夹名
+async def get_folder_name(username: str, folder_id: str) -> str:
+    """
+    从文件夹id获取文件夹名
+    :param username: 用户名
+    :param folder_id: 文件夹id
+    :return: 文件夹名
+    """
+    return await db_operation.FolderTable_get_name(username, folder_id)
 
 
 async def get_all(username: str, folder_id: str) -> dict:

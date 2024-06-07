@@ -64,5 +64,6 @@ async def index(
             "all_user": all_user,
             "all_dict": all_dict,
             "folder_id": folder_id,
+            "folder_id_name": await get_data_utils.get_folder_name(username, folder_id),
         },
     )  # 否则进入网盘首页
