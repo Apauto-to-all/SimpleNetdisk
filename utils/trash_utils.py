@@ -100,7 +100,11 @@ async def delete_forever_files_and_folders(username: str, items: dict):
         if not await db_operation.FileTable_get_cpnums(
             username, file_uuid
         ):  # 获取文件的复制次数，如果为0就删除文件
-            # 删除文件
+            # 删除文件，并减少用户的使用空间
+            file_size = await db_operation.FileTable_get_file_size(username, file_uuid)
+            await db_operation.UsersTable_update_uspace_minus_file_size(
+                username, file_size
+            )  # 减少用户的使用空间，去除永久删除的文件大小
             if os.path.exists(file_path):
                 os.remove(file_path)
         # 为永久删除的文件生成新的文件名

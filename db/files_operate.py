@@ -42,7 +42,7 @@ class FileOperate:
         """
         sql = """
         INSERT INTO Files(Uname, Fid, Foid, Finame, Fictime, FiKB, Fipath, Copytimes)
-        VALUES($1, $2, $3, $4, now(), $5, $6, 0)
+        VALUES($1, $2, $3, $4, now(), $5, $6, 1)
         """
         try:
             async with self.pool.acquire() as connection:
@@ -448,6 +448,29 @@ class FileOperate:
             error_info = traceback.format_exc()
             logger.error(error_info)
             logger.error(e)
+
+    # 获取文件的内存大小
+    async def FileTable_get_file_size(self, username: str, file_id: str) -> int:
+        """
+        获取文件的内存大小
+        :param username: 用户名
+        :param file_id: 文件id
+        :return: 文件大小
+        """
+        sql = """
+        SELECT FiKB
+        FROM Files
+        WHERE Uname = $1 AND Fid = $2
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.fetchval(sql, username, file_id)
+                return result if result else 0
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return 0
 
 
 """

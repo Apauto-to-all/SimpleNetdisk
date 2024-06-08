@@ -228,6 +228,28 @@ class UsersOperate:
             logger.error(e)
             return 0
 
+    # 更新用户的使用空间，减去永久删除的文件大小
+    async def UsersTable_update_uspace_minus_file_size(
+        self, username: str, file_size: int
+    ):
+        """
+        更新用户的使用空间，减去永久删除的文件大小，如果减去的大小大于用户的使用空间，就设置使用空间为 0
+        :param username: 用户名
+        :param file_size: 文件大小，要减去的大小，
+        """
+        sql = """
+        update Users
+        set Uspace = GREATEST(Uspace - $2, 0)
+        where Uname = $1;
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                await connection.execute(sql, username, file_size)
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+
 
 """
 --等级表
