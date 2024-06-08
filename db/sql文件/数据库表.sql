@@ -48,7 +48,7 @@ create domain ifDomain boolean
 create domain FopasswdDomain varchar(60);
 --创建Copytimes域，smallint类型，文件夹被复制次数/文件被复制次数
 create domain CopytimesDomain smallint
-  constraint Copytimes_constraint DEFAULT 0;
+  constraint Copytimes_constraint not null DEFAULT 1;
 
 --垃圾桶表相关域
 --创建time域，timestamp类型，放入回收站时间/文件删除时间/密匙表过期时间
