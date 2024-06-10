@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>简云</title>
+    <link rel="stylesheet" href="../css/index_styles.css">
+    <script src="../js/test-trash.js"></script>
+</head>
+
+<body class="container">
+    <h2>垃圾箱页面</h2>
+    <h3>用户：<span id="username"></span></h3>
+    <label>全选</label>
+    <input type="checkbox" id="chkall" onclick="chk_all()">
+    <button onclick="restore()">还原文件</button>
+    <button onclick="deleteForever()">永久删除</button>
+    <ul id="folders"></ul>
+    <ul id="files"></ul>
+</body>
+
+</html>

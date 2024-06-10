@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简云</title>
+    <link rel="stylesheet" href="../static/css/login_styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="login-wrapper">
+            <div class="header">简云登入</div>
+            <!-- 监控登入按钮 -->
+            <form action="/login" method="post">
+                <div class="form-wrapper">
+                    <input type="text" name="username" value="{{ username }}" placeholder="请输入用户名" class="input-item">
+                    <input type="password" name="password" placeholder="请输入密码" class="input-item">
+                    {% if isUseCapthca %}
+                    <!-- 插入显示captcha的HTML代码 -->
+                    <img src="/captcha" alt="Captcha" onclick="this.src='/captcha?' + new Date().getTime();">
+                    <input type="text" name="captcha" placeholder="请输入验证码" class="input-item">
+                    {% endif %}
+                    <!-- 提示错误信息 -->
+                    <div class="error-message">{{ error_message }}</div>
+                    <button class="btn">立即登入</button>
+                </div>
+            </form>
+
+            <div class="msg">
+                没有账户？
+                <a href="/register">注册</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
