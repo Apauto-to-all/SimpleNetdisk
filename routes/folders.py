@@ -113,7 +113,7 @@ async def delete_file_folder(
             if not await password_utils.verify_password(unlock_folder, lock_folder_id):
                 return {"error": "文件所属的文件夹未解密，请先解密再使用"}
 
-        # 获取被删除文件的父级文件夹id
+        # 删除文件
         if await files_utils.delete_file(username, file_id):
             return {"success": "删除成功"}
     if folder_id and not file_id:  # 删除文件夹

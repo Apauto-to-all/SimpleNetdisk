@@ -87,7 +87,7 @@ setup_logger()
 
 
 # 测试前缀
-isTest = False  # 是否为测试模式
+isTest = True  # 是否为测试模式
 test_prefix = ""  # 测试前缀
 if isTest:  # 如果为测试模式，使用有测试前缀的测试文件
     test_prefix = "test-"  # 测试前缀

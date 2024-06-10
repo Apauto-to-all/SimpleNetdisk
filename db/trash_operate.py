@@ -154,7 +154,7 @@ class TrashOperate:
 create table Trash(
 	Uname UnameDomain,--用户名
 	Fshareid FidDomain,--文件id和文件夹id
-	ForFi ifDomain,--文件还是文件夹
+	ForFi ifDomain,--文件还是文件夹，true为文件夹，false为文件
 	Ptime timeDomain,--放入回收站时间
 	Fideltime timeDomain,--文件删除时间
 	primary key (Uname, Fid),

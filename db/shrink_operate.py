@@ -26,3 +26,34 @@ class ShrinkOperate:
             logger.error(error_info)
             logger.error(e)
             return False
+
+    # 通过文件类型获取缩略图
+    async def ShrinkTable_get_shrink(self, file_type: str) -> str:
+        """
+        通过文件类型获取缩略图
+        :param file_type: 文件类型
+        :return: 缩略图路径
+        """
+        sql = """
+        select Spath
+        from Shrink
+        where Fitype = $1
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.fetchval(sql, file_type)
+                return result[0].get("spath") if result else ""
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return ""
+
+
+"""
+--缩略图表
+create table Shrink(
+	Fitype FitypeDomain primary key,--文件类型
+	Spath PathDomain --缩略图路径
+);
+"""

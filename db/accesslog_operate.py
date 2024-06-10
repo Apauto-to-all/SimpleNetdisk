@@ -69,9 +69,7 @@ class AccessLogOperate:
         try:
             async with self.pool.acquire() as connection:
                 result = await connection.fetch(sql, ip, headers)
-                if not result:
-                    return 0
-                return int(result[0].get("failnum"))
+                return int(result[0].get("failnum")) if result else 0
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)

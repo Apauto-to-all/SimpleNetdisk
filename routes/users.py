@@ -40,6 +40,8 @@ async def change_user_avatar(
     # 保存到磁盘
     path = os.path.join(config.user_avatar_path, f"{username}.jpg")
     image.save(path, "JPEG")
+    # 更新数据库中的头像路径
+    await user_utils.change_user_avatar_path(username, path)
 
 
 # 修改用户昵称

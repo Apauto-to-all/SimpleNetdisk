@@ -78,40 +78,41 @@ async def copy_files_and_folders(
     :param files_id_list: 文件 id 列表
     :param folders_id_list: 文件夹 id 列表
     """
-    if username and target_folder_id:
-        if files_id_list:  # 如果有文件 id 列表
-            for file_id in files_id_list:  # 遍历文件 id 列表
-                new_file_id = await get_data_utils.get_new_file_id(
-                    username
-                )  # 获取新文件 id
-                await db_operation.FileTable_copy_file(  # 复制文件
+    if not username and not target_folder_id:
+        return
+    if files_id_list:  # 如果有文件 id 列表
+        for file_id in files_id_list:  # 遍历文件 id 列表
+            new_file_id = await get_data_utils.get_new_file_id(
+                username
+            )  # 获取新文件 id
+            await db_operation.FileTable_copy_file(  # 复制文件
+                username,
+                target_folder_id,
+                file_id,
+                new_file_id,
+            )
+    if folders_id_list:  # 如果有文件夹 id 列表
+        for folder_id in folders_id_list:
+            # 获取新文件夹 id
+            new_folder_id = await get_data_utils.get_new_folder_id(
+                username
+            )  # 获取新文件夹 id
+            await db_operation.FolderTable_copy_folder(  # 复制文件夹
+                username,
+                target_folder_id,
+                folder_id,
+                new_folder_id,
+            )
+            # 递归复制文件夹和文件
+            await copy_files_and_folders(
+                username,
+                new_folder_id,
+                await db_operation.FileTable_get_all_file_id_from_parent_folder(
                     username,
-                    target_folder_id,
-                    file_id,
-                    new_file_id,
-                )
-        if folders_id_list:  # 如果有文件夹 id 列表
-            for folder_id in folders_id_list:
-                # 获取新文件夹 id
-                new_folder_id = await get_data_utils.get_new_folder_id(
-                    username
-                )  # 获取新文件夹 id
-                await db_operation.FolderTable_copy_folder(  # 复制文件夹
-                    username,
-                    target_folder_id,
                     folder_id,
-                    new_folder_id,
-                )
-                # 递归复制文件夹和文件
-                await copy_files_and_folders(
+                ),
+                await db_operation.FolderTable_get_all_file_id_from_parent_folder(
                     username,
-                    new_folder_id,
-                    await db_operation.FileTable_get_all_file_id_from_parent_folder(
-                        username,
-                        folder_id,
-                    ),
-                    await db_operation.FolderTable_get_all_file_id_from_parent_folder(
-                        username,
-                        folder_id,
-                    ),
-                )  # 递归复制文件夹和文件
+                    folder_id,
+                ),
+            )  # 递归复制文件夹和文件

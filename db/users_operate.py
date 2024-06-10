@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class UsersOperate:
+    # 注册用户
     async def UsersTable_insert(
         self,
         username: str,
@@ -152,9 +153,7 @@ class UsersOperate:
         try:
             async with self.pool.acquire() as connection:
                 result = await connection.fetch(sql, username)
-                if result:
-                    return result[0].get("hpath")
-                return ""
+                return result[0].get("hpath") if result else ""
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)
@@ -249,6 +248,29 @@ class UsersOperate:
             error_info = traceback.format_exc()
             logger.error(error_info)
             logger.error(e)
+
+    # 更新用户头像路径
+    async def UsersTable_update_hpath(self, username: str, hpath: str) -> bool:
+        """
+        更新用户头像路径
+        :param username: 用户名
+        :param hpath: 头像路径
+        :return: 如果更新成功就返回 True，否则返回 False
+        """
+        sql = """
+        update Users
+        set Hpath = $2
+        where Uname = $1;
+        """
+        try:
+            async with self.pool.acquire() as connection:
+                result = await connection.execute(sql, username, hpath)
+                return True if result else False
+        except Exception as e:
+            error_info = traceback.format_exc()
+            logger.error(error_info)
+            logger.error(e)
+            return False
 
 
 """

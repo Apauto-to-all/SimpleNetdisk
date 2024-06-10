@@ -191,3 +191,13 @@ async def change_user_password(username: str, new_password: str):
     return await db_operation.UsersTable_update_password(
         username, new_password
     )  # 更新用户密码
+
+
+# 更新数据库中的头像路径
+async def change_user_avatar_path(username: str, path: str):
+    """
+    更新数据库中的头像路径
+    :param username: 用户名
+    :param path: 头像路径
+    """
+    await db_operation.UsersTable_update_hpath(username, path)  # 更新头像路径

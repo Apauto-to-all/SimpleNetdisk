@@ -5,7 +5,7 @@ from fastapi import APIRouter, Cookie, Response
 from fastapi.responses import FileResponse
 from captcha.image import ImageCaptcha  # 导入 ImageCaptcha 类，用于生成图片验证码
 import string  # 导入 string 模块，用于生成验证码
-from utils import password_utils, user_utils
+from utils import get_data_utils, password_utils, user_utils
 import config  # 导入配置文件
 
 router = APIRouter()
@@ -31,8 +31,8 @@ async def getCaptcha():
 async def get_avatar(access_token: Optional[str] = Cookie(None)):
     username = await user_utils.isLogin_getUser(access_token)  # 从 JWT 中获取用户名
     if username:  # 判断用户名是否存在
-        img_path = f"{config.user_avatar_path}/{username}.jpg"  # 头像路径
-        if not os.path.exists(img_path):  # 判断头像是否存在
+        img_path = await get_data_utils.get_avatar_path(username)  # 获取用户头像路径
+        if not img_path or not os.path.exists(img_path):  # 判断头像是否存在
             img_path = f"{config.user_avatar_path}/default.jpg"  # 默认头像路径
         return FileResponse(img_path)  # 返回头像
 
@@ -43,7 +43,8 @@ async def get_thumbnail(file_type: str):
         return FileResponse(f"{config.thumbnail_path}/default/folder.png")
     if file_type == "unknown":  # 判断文件类型是否为未知文件
         return FileResponse(f"{config.thumbnail_path}/default/unknown.png")
-    img_path = f"{config.thumbnail_path}/default/{file_type}.png"  # 缩略图路径
+
+    img_path = await get_data_utils.get_thumbnail_path(file_type)  # 缩略图路径
     if os.path.exists(img_path):  # 判断缩略图是否存在
         return FileResponse(img_path)  # 返回缩略图
 

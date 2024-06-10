@@ -53,7 +53,7 @@ async def get_trash_folder(
     return await trash_utils.get_trash_folders(username)  # 获取所有被删除的文件夹
 
 
-# 恢复被删除的文件
+# 获取被删除的文件
 @router.get("/trash/file")
 async def get_trash_file(
     access_token: Optional[str] = Cookie(None),  # 读取 Cookie

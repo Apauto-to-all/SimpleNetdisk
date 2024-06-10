@@ -164,3 +164,29 @@ async def get_new_folder_id(username: str) -> str:
     ):  # 如果文件夹id已经存在，重新生成，直到文件夹id不存在
         new_folder_id = await uuid_utils.get_uuid()
     return new_folder_id
+
+
+# 获取文件类型对应的缩略图路径
+async def get_thumbnail_path(file_type: str) -> str:
+    """
+    获取文件类型对应的缩略图路径
+    :param file_type: 文件类型
+    :return: 缩略图路径
+    """
+    if file_type:
+        image_path = await db_operation.ShrinkTable_get_shrink(file_type)
+    if image_path:
+        return image_path
+    return ""
+
+
+# 获取用户头像路径
+async def get_avatar_path(username: str) -> str:
+    """
+    获取用户头像路径
+    :param username: 用户名
+    :return: 用户头像路径
+    """
+    if username:
+        return await db_operation.UsersTable_select_hpath(username)
+    return ""
