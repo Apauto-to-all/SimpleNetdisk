@@ -147,7 +147,7 @@
         </div>
     </div>
         </center>
-    </div>
+
     <script>
         document.getElementById('changeUserInfoButton').onclick = function () {
             document.getElementById('changeUserInfoModal').style.display = "block";
@@ -156,6 +156,12 @@
             document.getElementById('changeUserInfoModal').style.display = "none";
         }
     </script>
+<br><br><br>
+    <!-- 文件树页面，用于复制和移动 -->
+    <a href="/cpMove"><button class="button2">跳转文件树页面</button></a>
+        <a href="test-trash.html"><button class="button4">回收站</button></a>
+
+</div>
     <div class="right-con"><!-- 右布局 -->
         <div class="test">
             <button class="button1" id="downloadButton" onclick="downloadALL()" style="margin-right: 80px">
@@ -187,20 +193,88 @@
         }
         // 批量删除
         async function deleteAll() {
-            var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
+            var checkboxesFile = document.querySelectorAll('input[type=checkbox].file:checked');
+            var checkboxesFolder = document.querySelectorAll('input[type=checkbox].folder:checked');
+            if (checkboxesFile.length + checkboxesFolder.length === 0) {
+                alert('请至少选择一个文件或文件夹');
+                return;
+            }
             var promises = [];
-            for (var i = 0; i < checkboxes.length; i++) {
+            for (var i = 0; i < checkboxesFile.length; i++) {
                 // 批量删除，发送get请求
-                var promise = await fetch('/delete?file_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
+                var promise = await fetch('/delete?file_id=' + checkboxesFile[i].id, { method: 'GET', credentials: 'include' });
                 promises.push(promise);
+            }
+            for (var i = 0; i < checkboxesFolder.length; i++) {
+                // 批量删除，发送get请求
+                var promise = await fetch('/delete?folder_id=' + checkboxesFolder[i].id, { method: 'GET', credentials: 'include' });
+                promises.push(promise);
+            }
+            if (promises.length === 0) {
+                alert('请至少选择一个文件或文件夹');
+                return;
+            }
+            Promise.all(promises).then(() => location.reload());
+        }
+
+        // 批量移动，设置cp_or_move的cookie，移动为False，复制为True
+        async function moveALL() {
+            var folders_id = [];
+            var files_id = [];
+            var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
+            for (var i = 0; i < checkboxes.length; i++) {
+                files_id.push(checkboxes[i].id);
             }
             checkboxes = document.querySelectorAll('input[type=checkbox].folder:checked');
             for (var i = 0; i < checkboxes.length; i++) {
-                // 批量删除，发送get请求
-                var promise = await fetch('/delete?folder_id=' + checkboxes[i].id, { method: 'GET', credentials: 'include' });
-                promises.push(promise);
+                folders_id.push(checkboxes[i].id);
             }
-            Promise.all(promises).then(() => location.reload());
+            if (folders_id.length + files_id.length === 0) {
+                alert('请至少选择一个文件或文件夹');
+                return;
+            }
+            // 将数据储存到cookie，key=files_id, value=files_id（列表），key=folders_id, value=folders_id（列表）
+            document.cookie = 'files_id=' + JSON.stringify(files_id) + '; path=/';
+            document.cookie = 'folders_id=' + JSON.stringify(folders_id) + '; path=/';
+            // 跳转到文件树页面
+            fetch('/set_cookie_move', {
+                method: 'GET',
+                credentials: 'include', // 确保cookies被发送
+            }).then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url; // 如果有重定向，跟随到新的URL
+                }
+            }).catch(error => console.error('Error:', error));
+        }
+
+        // 批量复制，设置cp_or_move的cookie，移动为False，复制为True
+        async function copyALL() {
+            var folders_id = [];
+            var files_id = [];
+            var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
+            for (var i = 0; i < checkboxes.length; i++) {
+                files_id.push(checkboxes[i].id);
+            }
+            checkboxes = document.querySelectorAll('input[type=checkbox].folder:checked');
+            for (var i = 0; i < checkboxes.length; i++) {
+                folders_id.push(checkboxes[i].id);
+            }
+            if (folders_id.length + files_id.length === 0) {
+                alert('请至少选择一个文件或文件夹');
+                return;
+            }
+            // 将数据储存到cookie，key=files_id, value=files_id（列表），key=folders_id, value=folders_id（列表）
+            document.cookie = 'files_id=' + JSON.stringify(files_id) + '; path=/';
+            document.cookie = 'folders_id=' + JSON.stringify(folders_id) + '; path=/';
+            // 跳转到文件树页面
+            fetch('/set_cookie_cp', {
+                method: 'GET',
+                credentials: 'include', // 确保cookies被发送
+            }).then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url; // 如果有重定向，跟随到新的URL
+                }
+            }).catch(error => console.error('Error:', error));
         }
     </script>
         </div>
@@ -270,11 +344,11 @@
         <!-- 模态窗口 -->
         <div id="decryptModal{{ folder_item.uuid }}" class="decryptModal" style="display: none;">
             <!-- 表单 -->
-            <form action="/decrypt?folder_id={{ folder_item.uuid }}" method="post" autocomplete="off">
+            <form id="decryptForm{{ folder_item.uuid }}">
                 <input type="text" name="password" placeholder="输入密码">
                 <input type="checkbox" id="is_permanent{{ folder_item.uuid }}" name="is_permanent" value="False">
                 <label for="option">永久删除密码</label>
-                <button id="decryptSubmit{{ folder_item.uuid }}">确认</button>
+                <button id="decryptSubmit{{ folder_item.uuid }}" type="button">确认</button>
             </form>
             <button id="decryptCancel{{ folder_item.uuid }}">取消</button>
         </div>
@@ -288,6 +362,31 @@
             document.getElementById('decryptCancel{{ folder_item.uuid }}').onclick = function () {
                 document.getElementById('decryptModal{{ folder_item.uuid }}').style.display = "none";
             }
+            document.getElementById('decryptSubmit{{ folder_item.uuid }}').addEventListener('click', function (event) {
+                var formData = new FormData(document.getElementById('decryptForm{{ folder_item.uuid }}'));
+                fetch('/decrypt?folder_id={{ folder_item.uuid }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.indexOf('application/json') !== -1) {
+                            // 如果响应的内容类型是JSON，尝试解析JSON
+                            return response.json().then(data => {
+                                if (data.error) {
+                                    alert(data.error);
+                                } else {
+                                    // 刷新页面
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            // 如果响应的内容类型不是JSON，直接刷新页面
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
         </script>
         {% else %}
         <img src="/folder/unlock" alt="unlock">
@@ -296,9 +395,9 @@
         <!-- 模态窗口 -->
         <div id="encryptModal{{ folder_item.uuid }}" class="encryptModal" style="display: none;">
             <!-- 表单 -->
-            <form action="/encrypt?folder_id={{ folder_item.uuid }}" method="post">
+            <form id="encryptForm{{ folder_item.uuid }}">
                 <input type="text" name="password" placeholder="输入密码">
-                <button id="encryptSubmit{{ folder_item.uuid }}">确认</button>
+                <button id="encryptSubmit{{ folder_item.uuid }}" type="button">确认</button>
             </form>
             <button id="encryptCancel{{ folder_item.uuid }}">取消</button>
         </div>
@@ -309,18 +408,60 @@
             document.getElementById('encryptCancel{{ folder_item.uuid }}').onclick = function () {
                 document.getElementById('encryptModal{{ folder_item.uuid }}').style.display = "none";
             }
+            document.getElementById('encryptSubmit{{ folder_item.uuid }}').addEventListener('click', function (event) {
+                var formData = new FormData(document.getElementById('encryptForm{{ folder_item.uuid }}'));
+                fetch('/encrypt?folder_id={{ folder_item.uuid }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.indexOf('application/json') !== -1) {
+                            // 如果响应的内容类型是JSON，尝试解析JSON
+                            return response.json().then(data => {
+                                if (data.error) {
+                                    alert(data.error);
+                                } else {
+                                    // 刷新页面
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            // 如果响应的内容类型不是JSON，直接刷新页面
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
         </script>
         {% endif %}
         <!-- 删除此文件夹 -->
-        <a href="/delete?folder_id={{ folder_item.uuid }}">删除此文件夹</a>
+        <button id="deleteButton{{ folder_item.uuid }}">删除此文件夹</button>
+        <script>
+            document.getElementById('deleteButton{{ folder_item.uuid }}').addEventListener('click', function (event) {
+                fetch('/delete?folder_id={{ folder_item.uuid }}', {
+                    method: 'GET'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            // 刷新页面
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        </script>
         <!--重命名文件夹 -->
         <button id="renameButton{{ folder_item.uuid }}">重命名此文件</button>
         <!--模态窗口 -->
         <div id="renameModal{{ folder_item.uuid }}" class="renameModal" style="display: none;">
             <!-- 表单 -->
-            <form action="/rename?folder_id={{ folder_item.uuid }}" method="post">
+            <form id="renameForm{{ folder_item.uuid }}" method="post">
                 <input type="text" value="{{ folder_item.name }}" name="new_folder_name" placeholder="输入新的名称">
-                <button id="renameSubmit{{ folder_item.uuid }}">重命名</button>
+                <button id="renameSubmit{{ folder_item.uuid }}" type="button">重命名</button>
             </form>
             <!-- 表单结束 -->
             <button id="renameCancel{{ folder_item.uuid }}">取消</button>
@@ -332,6 +473,23 @@
             document.getElementById('renameCancel{{ folder_item.uuid }}').onclick = function () {
                 document.getElementById('renameModal{{ folder_item.uuid }}').style.display = "none";
             }
+            document.getElementById('renameSubmit{{ folder_item.uuid }}').addEventListener('click', function (event) {
+                var formData = new FormData(document.getElementById('renameForm{{ folder_item.uuid }}'));
+                fetch('/rename?folder_id={{ folder_item.uuid }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            // 刷新页面
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
         </script>
         <!--重命名文件结束-->
 
@@ -349,29 +507,89 @@
         <a id="{{ file_item.uuid }}">{{ file_item.name }}</a>
         <a id="time">{{ file_item.time }}</a>
         <a id="size">{{ file_item.size }}</a>
-        <a href="/download?file_id={{ file_item.uuid }}">下载此文件</a>
-        <a href="/delete?file_id={{ file_item.uuid }}">删除此文件</a>
-        <!-- 重命名文件 -->
+        <!-- 下载文件 -->
+        <button id="downloadButton{{ file_item.uuid }}">下载此文件</button>
+        <script>
+            document.getElementById('downloadButton{{ file_item.uuid }}').addEventListener('click', function (event) {
+                fetch('/download?file_id={{ file_item.uuid }}', {
+                    method: 'GET'
+                })
+                    .then(response => response.clone().json().then(json => ({ ok: response.ok, status: response.status, json })).catch(() => response.blob()))
+                    .then(data => {
+                        if (data.json && data.json.error) {
+                            alert(data.json.error);
+                        } else if (data instanceof Blob) {
+                            var url = window.URL.createObjectURL(data);
+                            var a = document.createElement('a');
+                            a.href = url;
+                            a.download = '{{ file_item.name }}';
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                        } else {
+                            throw new Error('Unexpected response');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        </script>
+        <!-- 删除文件 -->
+        <button id="deleteButton{{ file_item.uuid }}">删除此文件</button>
+        <script>
+            document.getElementById('deleteButton{{ file_item.uuid }}').addEventListener('click', function (event) {
+                fetch('/delete?file_id={{ file_item.uuid }}', {
+                    method: 'GET'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            // 刷新页面
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        </script>
+   <!-- 重命名文件 -->
         <button id="renameButton{{ file_item.uuid }}">重命名此文件</button>
         <!-- 弹出窗口 -->
         <div id="renameModal{{ file_item.uuid }}" class="renameModal" style="display: none;">
             <!-- 表单 -->
-            <form action="/rename?file_id={{ file_item.uuid }}" method="post">
+            <form id="renameForm{{ file_item.uuid }}" method="post">
                 <input type="text" value="{{ file_item.name }}" name="new_file_name" placeholder="输入新的名称">
-                <button id="renameSubmit{{ file_item.uuid }}">重命名</button>
+                <button id="renameSubmit{{ file_item.uuid }}" type="button">重命名</button>
             </form>
             <button id="renameCancel{{ file_item.uuid }}">取消</button>
         </div>
+        <!-- 重命名文件js代码 -->
+        <script>
+            document.getElementById('renameButton{{ file_item.uuid }}').onclick = function () {
+                document.getElementById('renameModal{{ file_item.uuid }}').style.display = "block";
+            }
+            document.getElementById('renameCancel{{ file_item.uuid }}').onclick = function () {
+                document.getElementById('renameModal{{ file_item.uuid }}').style.display = "none";
+            }
+            document.getElementById('renameSubmit{{ file_item.uuid }}').addEventListener('click', function (event) {
+                var formData = new FormData(document.getElementById('renameForm{{ file_item.uuid }}'));
+                fetch('/rename?file_id={{ file_item.uuid }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            // 刷新页面
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        </script>
     </div>
-    <!-- 重命名文件js代码 -->
-    <script>
-        document.getElementById('renameButton{{ file_item.uuid }}').onclick = function () {
-            document.getElementById('renameModal{{ file_item.uuid }}').style.display = "block";
-        }
-        document.getElementById('renameCancel{{ file_item.uuid }}').onclick = function () {
-            document.getElementById('renameModal{{ file_item.uuid }}').style.display = "none";
-        }
-    </script>
     {% endfor %}
     {% endif %}
     </div>
@@ -381,25 +599,42 @@
                 创建文件夹
             </button>
             <!-- 模态窗口 -->
-            <div id="createFolderModal{{ folder_id }}" class="modal" class="createFolderModal" style="display: none;">
-                <div class="modal-content">
-                    <!-- 表单 -->
-                    <form action="/create_folder?folder_id={{ folder_id }}" method="post">
-                        <input type="text" name="folder_name" placeholder="输入文件夹名称">
-                        <button id="createFolderSubmit{{ folder_id }}">确认</button>
-                    </form>
-                    <!-- 表单结束 -->
-                    <button id="createFolderCancel{{ folder_id }}">取消</button>
-                </div>
-            </div>
+    <div id="createFolderModal{{ folder_id }}" class="modal" class="createFolderModal" style="display: none;">
+        <div class="modal-content">
+            <!-- 表单 -->
+            <form id="createFolderForm{{ folder_id }}" method="post">
+                <input type="text" name="folder_name" placeholder="输入文件夹名称">
+                <button id="createFolderSubmit{{ folder_id }}" type="button">确认</button>
+            </form>
+            <!-- 表单结束 -->
+            <button id="createFolderCancel{{ folder_id }}">取消</button>
+        </div>
+    </div>
             <script>
-                document.getElementById('createFolderButton{{ folder_id }}').onclick = function () {
-                    document.getElementById('createFolderModal{{ folder_id }}').style.display = "block";
-                }
-                document.getElementById('createFolderCancel{{ folder_id }}').onclick = function () {
-                    document.getElementById('createFolderModal{{ folder_id }}').style.display = "none";
-                }
-            </script>
+        document.getElementById('createFolderButton{{ folder_id }}').onclick = function () {
+            document.getElementById('createFolderModal{{ folder_id }}').style.display = "block";
+        }
+        document.getElementById('createFolderCancel{{ folder_id }}').onclick = function () {
+            document.getElementById('createFolderModal{{ folder_id }}').style.display = "none";
+        }
+        document.getElementById('createFolderSubmit{{ folder_id }}').addEventListener('click', function (event) {
+            var formData = new FormData(document.getElementById('createFolderForm{{ folder_id }}'));
+            fetch('/create_folder?folder_id={{ folder_id }}', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        // 刷新页面
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
 
         <!-- 创建文件夹结束 -->
             <!-- 上传文件 -->
@@ -412,23 +647,41 @@
             </button>
             <!-- 模态窗口 -->
             <div id="uploadModal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h2>请上传一个或多个文件</h2>
-                    <form id="upfiles" action="/upfile?folder_id={{ folder_id }}" method="post" enctype="multipart/form-data">
-                <input type="file" id="files" name="files" multiple>
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>请上传一个或多个文件</h2>
+            <form id="upfiles{{ folder_id }}" enctype="multipart/form-data">
+                <input type="file" id="up_files" name="files" multiple>
                 <input type="submit" value="上传">
             </form>
                 </div>
             </div>
         </div>
-    <script>
-         document.getElementById('upfiles').addEventListener('submit', function (event) {
-            var fileInput = document.getElementById('files');
+<script>
+    document.getElementById('upfiles{{ folder_id }}').addEventListener('submit', function (event) {
+            var fileInput = document.getElementById('up_files');
             if (fileInput.files.length === 0) {
                 event.preventDefault();
                 alert('请至少选择一个文件上传');
+                return;
             }
+            event.preventDefault();
+            var formData = new FormData(this);
+            fetch('/upfile?folder_id={{ folder_id }}', {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url; // 如果有重定向，跟随到新的URL
+                    return;
+                } else {
+                    response.json().then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        }
+                    });
+                }
+            }).catch(error => console.error('Error:', error));
         });
         function showUploadForm() {
             var modal = document.getElementById('uploadModal');
