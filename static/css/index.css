@@ -253,3 +253,43 @@ body {
     overflow-x: hidden;
     background: none;
 }
+.img_1{
+    cursor:pointer; width: 70px;height: 70px;
+    float: right;
+    position: fixed;
+    bottom: 130px;
+    /* 距离底部20px */
+    right: 20px;
+    /* 距离右侧20px */
+    padding: 10px 15px;
+    /* 内边距 */
+    /* 背景颜色 */
+    color: white;
+    /* 文字颜色 */
+    border: none;
+    /* 无边框 */
+    border-radius: 5px;
+    /* 圆角边框 */
+    /*cursor: pointer;*/
+    /* 鼠标悬停时的指针形状 */
+}
+.img_2{
+    cursor:pointer; width: 70px;height: 70px;
+    float: right;
+    position: fixed;
+    bottom: 50px;
+    /* 距离底部20px */
+    right: 20px;
+    /* 距离右侧20px */
+    padding: 10px 15px;
+    /* 内边距 */
+    /* 背景颜色 */
+    color: white;
+    /* 文字颜色 */
+    border: none;
+    /* 无边框 */
+    border-radius: 5px;
+    /* 圆角边框 */
+   /* cursor: pointer;*/
+    /* 鼠标悬停时的指针形状 */
+}

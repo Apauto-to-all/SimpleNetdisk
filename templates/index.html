@@ -31,7 +31,7 @@
             <center class="cet">
                 <a href="../static/html/test-trash.html"><button id="5" class="button4"
                         style="display: none">回收站</button>
-                    <img src="../static/img/垃圾桶.png" alt="Button" id="imageButton4"
+                    <img src="../static/img/lajitong.png" alt="Button" id="imageButton4"
                         style="cursor:pointer; width: 90px;height: 90px">
 
                     <script>
@@ -47,7 +47,21 @@
                     </script>
                 </a>
                 <br><br><br>
-                <button id="changeUserInfoButton" class="setting">修改用户信息</button>
+                <button id="changeUserInfoButton" class="setting" style="display: none">修改用户信息</button>
+                <img src="../static/img/bianji.png" alt="Button" id="imageButton444"
+                        style="cursor:pointer; width: 90px;height: 90px">
+
+                    <script>
+                        // 获取图片和按钮元素
+                        var imageButton444 = document.getElementById('imageButton444');
+                        var realButton444 = document.getElementById('changeUserInfoButton');
+
+                        // 为图片添加点击事件监听器
+                        imageButton444.addEventListener('click', function () {
+                            // 触发按钮的点击事件
+                            realButton444.click();
+                        });
+                    </script>
             </center>
             <div class="cet1">
                 <center>
@@ -512,9 +526,22 @@
             <!-- 文件显示结束 -->
             <!-- 创建文件夹 -->
             <button id="createFolderButton{{ folder_id }}" class="button33"
-                style=" background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;">
+                style=" background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;display: none;">
                 创建文件夹
             </button>
+            <img class="img_2" src="../static/img/创建文件夹.png" alt="Button" id="imageButton666">
+
+                        <script>
+                            // 获取图片和按钮元素
+                            var imageButton666 = document.getElementById('imageButton666');
+                            var realButton666 = document.getElementById('createFolderButton{{ folder_id }}');
+
+                            // 为图片添加点击事件监听器555
+                            imageButton666.addEventListener('click', function () {
+                                // 触发按钮的点击事件
+                                realButton666.click();
+                            });
+                        </script>
             <!-- 模态窗口 -->
             <div id="createFolderModal{{ folder_id }}" class="modal" class="createFolderModal" style="display: none;">
                 <div class="modal-content">
@@ -556,10 +583,23 @@
             <!-- 创建文件夹结束 -->
             <!-- 上传文件 -->
             <!-- 显示上传表单的按钮 -->
-            <button onclick="showUploadForm()" class="button33_1"
-                style="background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;">
+            <button id="555" onclick="showUploadForm()" class="button33_1"
+                style="background-color: rgb(57, 191, 224); width:100px;height: 45px;border-radius: 50px ;display: none;">
                 上传文件
             </button>
+            <img class="img_1" src="../static/img/上传文件.png" alt="Button" id="imageButton555">
+
+                        <script>
+                            // 获取图片和按钮元素
+                            var imageButton555 = document.getElementById('imageButton555');
+                            var realButton555 = document.getElementById('555');
+
+                            // 为图片添加点击事件监听器555
+                            imageButton555.addEventListener('click', function () {
+                                // 触发按钮的点击事件
+                                realButton555.click();
+                            });
+                        </script>
             <!-- 模态窗口 -->
             <div id="uploadModal" class="modal">
                 <div class="modal-content">
