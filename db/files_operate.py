@@ -16,7 +16,7 @@ async def get_file_type(file_name: str) -> str:
     :param file_name: 文件名
     :return: 文件类型
     """
-    file_type = os.path.splitext(file_name)[-1]  # 获取文件类型
+    file_type = os.path.splitext(file_name)[-1].replace(".", "").lower()  # 获取文件类型
     return file_type if file_type else "unknown"  # 返回文件类型
 
 
