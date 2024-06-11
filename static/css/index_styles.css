@@ -91,3 +91,35 @@ body {
     text-decoration: none;
     cursor: pointer;
 }
+
+.filename {
+    width: 40%;
+    /* 文件名的宽度 */
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.creation-time {
+    width: 30%;
+    /* 创建时间的宽度 */
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-size {
+    width: 20%;
+    /* 文件大小的宽度 */
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lock-size {
+    /* 图标，向后移动20%-50px */
+    margin-left: calc(20% - 50px);
+}

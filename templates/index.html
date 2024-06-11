@@ -12,7 +12,6 @@
 
 <body class="container">
     <!-- <h2>登出功能实现</h2> -->
-
     <div class="main-content"><!-- 整体布局 -->
         <div class="left-con"><!-- 左布局 -->
             <!-- 显示用户信息 -->
@@ -23,7 +22,7 @@
             <!-- 2. 用户昵称 -->
             <br><br>
             <center>
-                <button class="user-info2" id="nickname">{{all_user.nickname}}</button>
+                <a class="user-info2">{{all_user.nickname}}</a>
             </center>
             <br><br><br>
 
@@ -230,22 +229,21 @@
             <!-- 实现文件夹显示 -->
             <br>
             <input type="checkbox" id="chkall" onclick="chk_all()">
-            <a>|</a>
-            <a>文件名</a>
-            <a>|</a>
-            <a>创建时间</a>
-            <a>|</a>
-            <a>文件大小</a>
+            <a style="margin-left: 50px;"></a>
+            <a class="filename">文件名</a>
+            <a class="creation-time">创建时间</a>
+            <a class="file-size">文件大小</a>
 
             {% if all_dict.folders %}
             {% for folder_item in all_dict.folders %}
             <div type="folder" class="folder">
                 <input type="checkbox" class="checkboxItem folder" id="{{ folder_item.uuid }}" onclick="chk_single()">
                 <img src="/thumbnail/folder" alt="folder">
-                <a href="/index/{{ folder_item.uuid }}">{{ folder_item.name }}</a>
-                <a id="time">{{ folder_item.time }}</a>
+                <a href="/index/{{ folder_item.uuid }}" class="filename">{{ folder_item.name }}</a>
+                <a id="time" class="creation-time">{{ folder_item.time }}</a>
                 {% if folder_item.password %}
                 <img src="/folder/lock" alt="lock">
+                <a class="lock-size"></a>
                 <!-- 解密文件夹 -->
                 <button id="decryptButton{{ folder_item.uuid }}">解密此文件夹</button>
                 <!-- 模态窗口 -->
@@ -300,6 +298,7 @@
                 </script>
                 {% else %}
                 <img src="/folder/unlock" alt="unlock">
+                <a class="lock-size"></a>
                 <!-- 加密文件夹 -->
                 <button id="encryptButton{{ folder_item.uuid }}">加密此文件夹</button>
                 <!-- 模态窗口 -->
@@ -419,9 +418,9 @@
             <div type="file" class="file">
                 <input type="checkbox" class="checkboxItem file" id="{{ file_item.uuid }}" onclick=" chk_single()">
                 <img src="/thumbnail/{{ file_item.type }}" alt="file">
-                <a id="{{ file_item.uuid }}">{{ file_item.name }}</a>
-                <a id="time">{{ file_item.time }}</a>
-                <a id="size">{{ file_item.size }}</a>
+                <a id="{{ file_item.uuid }}" class="filename">{{ file_item.name }}</a>
+                <a id="time" class="creation-time">{{ file_item.time }}</a>
+                <a id="size" class="file-size">{{ file_item.size }}</a>
                 <!-- 下载文件 -->
                 <button id="downloadButton{{ file_item.uuid }}">下载此文件</button>
                 <script>
