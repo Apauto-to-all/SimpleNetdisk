@@ -6,6 +6,8 @@
     <title>简云</title>
     <link rel="stylesheet" href="../static/css/index_styles.css">
     <link rel="stylesheet" href="../static/css/index.css">
+    <script src="../static/js/bulk_operations.js"></script>
+    <script src="../static/js/select_all.js"></script>
 </head>
 
 <body class="container">
@@ -180,9 +182,6 @@
                 }
             </script>
             <br><br><br>
-            <!-- 文件树页面，用于复制和移动 -->
-            {#<a href="/cpMove"><button class="button2">跳转文件树页面</button></a> #}
-            {#<a href="../static/html/test-trash.html"><button class="button4">回收站</button></a>#}
             <center>
                 <button id="logoutButton"
                     onclick="fetch('/logout', { method: 'GET', credentials: 'include' }).then(function(response) { if (response.redirected) { window.location.href = response.url; } });"
@@ -210,111 +209,6 @@
                 <button class="button2" id="moveButton" style="margin-right: 80px" onclick="moveALL()">批量移动</button>
                 <button class="button3" id="copyButton" style="margin-right: 80px" onclick="copyALL()">批量复制</button>
                 <button class="button4" id="deleteButton" onclick="deleteAll()" style="margin-right: 80px">批量删除</button>
-                <script>
-                    // 批量下载
-                    async function downloadALL() {
-                        var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
-                        for (var i = 0; i < checkboxes.length; i++) {
-                            // 创建新的 a 元素
-                            var link = document.createElement('a');
-                            link.href = '/download?file_id=' + checkboxes[i].id;
-                            link.download = 'file_' + checkboxes[i].id;  // 设置下载的文件名
-                            link.style.display = 'none';  // 隐藏元素
-                            document.body.appendChild(link);  // 将元素添加到页面中
-                            link.click();  // 模拟点击元素
-                            document.body.removeChild(link);  // 从页面中移除元素
-
-                            // 等待一段时间以允许文件下载开始
-                            await new Promise(resolve => setTimeout(resolve, 100));
-
-                        }
-                    }
-                    // 批量删除
-                    async function deleteAll() {
-                        var checkboxesFile = document.querySelectorAll('input[type=checkbox].file:checked');
-                        var checkboxesFolder = document.querySelectorAll('input[type=checkbox].folder:checked');
-                        if (checkboxesFile.length + checkboxesFolder.length === 0) {
-                            alert('请至少选择一个文件或文件夹');
-                            return;
-                        }
-                        var promises = [];
-                        for (var i = 0; i < checkboxesFile.length; i++) {
-                            // 批量删除，发送get请求
-                            var promise = await fetch('/delete?file_id=' + checkboxesFile[i].id, { method: 'GET', credentials: 'include' });
-                            promises.push(promise);
-                        }
-                        for (var i = 0; i < checkboxesFolder.length; i++) {
-                            // 批量删除，发送get请求
-                            var promise = await fetch('/delete?folder_id=' + checkboxesFolder[i].id, { method: 'GET', credentials: 'include' });
-                            promises.push(promise);
-                        }
-                        if (promises.length === 0) {
-                            alert('请至少选择一个文件或文件夹');
-                            return;
-                        }
-                        Promise.all(promises).then(() => location.reload());
-                    }
-
-                    // 批量移动，设置cp_or_move的cookie，移动为False，复制为True
-                    async function moveALL() {
-                        var folders_id = [];
-                        var files_id = [];
-                        var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
-                        for (var i = 0; i < checkboxes.length; i++) {
-                            files_id.push(checkboxes[i].id);
-                        }
-                        checkboxes = document.querySelectorAll('input[type=checkbox].folder:checked');
-                        for (var i = 0; i < checkboxes.length; i++) {
-                            folders_id.push(checkboxes[i].id);
-                        }
-                        if (folders_id.length + files_id.length === 0) {
-                            alert('请至少选择一个文件或文件夹');
-                            return;
-                        }
-                        // 将数据储存到cookie，key=files_id, value=files_id（列表），key=folders_id, value=folders_id（列表）
-                        document.cookie = 'files_id=' + JSON.stringify(files_id) + '; path=/';
-                        document.cookie = 'folders_id=' + JSON.stringify(folders_id) + '; path=/';
-                        // 跳转到文件树页面
-                        fetch('/set_cookie_move', {
-                            method: 'GET',
-                            credentials: 'include', // 确保cookies被发送
-                        }).then(response => {
-                            if (response.redirected) {
-                                window.location.href = response.url; // 如果有重定向，跟随到新的URL
-                            }
-                        }).catch(error => console.error('Error:', error));
-                    }
-
-                    // 批量复制，设置cp_or_move的cookie，移动为False，复制为True
-                    async function copyALL() {
-                        var folders_id = [];
-                        var files_id = [];
-                        var checkboxes = document.querySelectorAll('input[type=checkbox].file:checked');
-                        for (var i = 0; i < checkboxes.length; i++) {
-                            files_id.push(checkboxes[i].id);
-                        }
-                        checkboxes = document.querySelectorAll('input[type=checkbox].folder:checked');
-                        for (var i = 0; i < checkboxes.length; i++) {
-                            folders_id.push(checkboxes[i].id);
-                        }
-                        if (folders_id.length + files_id.length === 0) {
-                            alert('请至少选择一个文件或文件夹');
-                            return;
-                        }
-                        // 将数据储存到cookie，key=files_id, value=files_id（列表），key=folders_id, value=folders_id（列表）
-                        document.cookie = 'files_id=' + JSON.stringify(files_id) + '; path=/';
-                        document.cookie = 'folders_id=' + JSON.stringify(folders_id) + '; path=/';
-                        // 跳转到文件树页面
-                        fetch('/set_cookie_cp', {
-                            method: 'GET',
-                            credentials: 'include', // 确保cookies被发送
-                        }).then(response => {
-                            if (response.redirected) {
-                                window.location.href = response.url; // 如果有重定向，跟随到新的URL
-                            }
-                        }).catch(error => console.error('Error:', error));
-                    }
-                </script>
             </div>
             <!-- 显示父类文件路径 -->
             <div class="fa-url">
@@ -342,30 +236,6 @@
             <a>创建时间</a>
             <a>|</a>
             <a>文件大小</a>
-            <script>
-                function chk_all() {
-                    var chkall = document.getElementById('chkall').checked;
-                    var checkboxes = document.querySelectorAll('input[type=checkbox]');
-                    for (var i = 0; i < checkboxes.length; i++) {
-                        checkboxes[i].checked = chkall;
-                    }
-                }
-                function chk_single() {
-                    var checkboxes = document.querySelectorAll('input[type=checkbox].checkboxItem');
-                    var allChecked = true;
-                    var someChecked = false;
-                    for (var i = 0; i < checkboxes.length; i++) {
-                        if (checkboxes[i].checked) {
-                            someChecked = true;
-                        } else {
-                            allChecked = false;
-                        }
-                    }
-                    var chkall = document.getElementById('chkall');
-                    chkall.checked = allChecked;
-                    chkall.indeterminate = someChecked && !allChecked;
-                }
-            </script>
 
             {% if all_dict.folders %}
             {% for folder_item in all_dict.folders %}
@@ -379,16 +249,18 @@
                 <!-- 解密文件夹 -->
                 <button id="decryptButton{{ folder_item.uuid }}">解密此文件夹</button>
                 <!-- 模态窗口 -->
-                <div id="decryptModal{{ folder_item.uuid }}" class="decryptModal" style="display: none;">
-                    <!-- 表单 -->
-                    <form id="decryptForm{{ folder_item.uuid }}">
-                        <input type="text" name="password" placeholder="输入密码">
-                        <input type="checkbox" id="is_permanent{{ folder_item.uuid }}" name="is_permanent"
-                            value="False">
-                        <label for="option">永久删除密码</label>
-                        <button id="decryptSubmit{{ folder_item.uuid }}" type="button">确认</button>
-                    </form>
-                    <button id="decryptCancel{{ folder_item.uuid }}">取消</button>
+                <div id="decryptModal{{ folder_item.uuid }}" class="decryptModal modal style=" display: none;">
+                    <div class="modal-content">
+                        <!-- 表单 -->
+                        <form id="decryptForm{{ folder_item.uuid }}">
+                            <input type="text" name="password" placeholder="输入密码">
+                            <input type="checkbox" id="is_permanent{{ folder_item.uuid }}" name="is_permanent"
+                                value="False">
+                            <label for="option">永久删除密码</label>
+                            <button id="decryptSubmit{{ folder_item.uuid }}" type="button">确认</button>
+                        </form>
+                        <button id="decryptCancel{{ folder_item.uuid }}">取消</button>
+                    </div>
                 </div>
                 <script>
                     document.getElementById('is_permanent{{ folder_item.uuid }}').addEventListener('change', function () {
@@ -431,13 +303,15 @@
                 <!-- 加密文件夹 -->
                 <button id="encryptButton{{ folder_item.uuid }}">加密此文件夹</button>
                 <!-- 模态窗口 -->
-                <div id="encryptModal{{ folder_item.uuid }}" class="encryptModal" style="display: none;">
-                    <!-- 表单 -->
-                    <form id="encryptForm{{ folder_item.uuid }}">
-                        <input type="text" name="password" placeholder="输入密码">
-                        <button id="encryptSubmit{{ folder_item.uuid }}" type="button">确认</button>
-                    </form>
-                    <button id="encryptCancel{{ folder_item.uuid }}">取消</button>
+                <div id="encryptModal{{ folder_item.uuid }}" class="encryptModal modal" style="display: none;">
+                    <div class="modal-content">
+                        <!-- 表单 -->
+                        <form id="encryptForm{{ folder_item.uuid }}">
+                            <input type="text" name="password" placeholder="输入密码">
+                            <button id="encryptSubmit{{ folder_item.uuid }}" type="button">确认</button>
+                        </form>
+                        <button id="encryptCancel{{ folder_item.uuid }}">取消</button>
+                    </div>
                 </div>
                 <script>
                     document.getElementById('encryptButton{{ folder_item.uuid }}').onclick = function () {
@@ -495,14 +369,17 @@
                 <!--重命名文件夹 -->
                 <button id="renameButton{{ folder_item.uuid }}">重命名此文件</button>
                 <!--模态窗口 -->
-                <div id="renameModal{{ folder_item.uuid }}" class="renameModal" style="display: none;">
-                    <!-- 表单 -->
-                    <form id="renameForm{{ folder_item.uuid }}" method="post">
-                        <input type="text" value="{{ folder_item.name }}" name="new_folder_name" placeholder="输入新的名称">
-                        <button id="renameSubmit{{ folder_item.uuid }}" type="button">重命名</button>
-                    </form>
-                    <!-- 表单结束 -->
-                    <button id="renameCancel{{ folder_item.uuid }}">取消</button>
+                <div id="renameModal{{ folder_item.uuid }}" class="renameModal modal" style="display: none;">
+                    <div class="modal-content">
+                        <!-- 表单 -->
+                        <form id="renameForm{{ folder_item.uuid }}" method="post">
+                            <input type="text" value="{{ folder_item.name }}" name="new_folder_name"
+                                placeholder="输入新的名称">
+                            <button id="renameSubmit{{ folder_item.uuid }}" type="button">重命名</button>
+                        </form>
+                        <!-- 表单结束 -->
+                        <button id="renameCancel{{ folder_item.uuid }}">取消</button>
+                    </div>
                 </div>
                 <script>
                     document.getElementById('renameButton{{ folder_item.uuid }}').onclick = function () {
@@ -593,13 +470,15 @@
                 <!-- 重命名文件 -->
                 <button id="renameButton{{ file_item.uuid }}">重命名此文件</button>
                 <!-- 弹出窗口 -->
-                <div id="renameModal{{ file_item.uuid }}" class="renameModal" style="display: none;">
-                    <!-- 表单 -->
-                    <form id="renameForm{{ file_item.uuid }}" method="post">
-                        <input type="text" value="{{ file_item.name }}" name="new_file_name" placeholder="输入新的名称">
-                        <button id="renameSubmit{{ file_item.uuid }}" type="button">重命名</button>
-                    </form>
-                    <button id="renameCancel{{ file_item.uuid }}">取消</button>
+                <div id="renameModal{{ file_item.uuid }}" class="renameModal modal" style="display: none;">
+                    <div class="modal-content">
+                        <!-- 表单 -->
+                        <form id="renameForm{{ file_item.uuid }}" method="post">
+                            <input type="text" value="{{ file_item.name }}" name="new_file_name" placeholder="输入新的名称">
+                            <button id="renameSubmit{{ file_item.uuid }}" type="button">重命名</button>
+                        </form>
+                        <button id="renameCancel{{ file_item.uuid }}">取消</button>
+                    </div>
                 </div>
                 <!-- 重命名文件js代码 -->
                 <script>
