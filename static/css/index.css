@@ -3,64 +3,108 @@
     padding: 0;
 }
 
-div{
-    white-space:nowrap;
+div {
+    white-space: nowrap;
 }
-.main-content{
+
+.main-content {
     height: 830px;
     display: flex;
 }
- .left-con{
+
+.left-con {
     /* float: left; */
     width: 250px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+    position: fixed;
+    height: 100%;
 
 }
+
 meter {
     height: 50px;
     width: 200px;
 }
 
-.left-con .user-info1{
+.left-con .user-info1 {
     padding-left: 31%;
-    width:33%;
-    height:6%;
 }
-.fa-url{
+
+.fa-url {
     margin-top: 40px;
 }
-.left-con .user-info2{
-    padding-left:9px;
+
+.left-con .user-info2 {
+    padding-left: 9px;
     width: 50%;
     height: 23px;
-    text-align:center;
+    text-align: center;
     background-color: #fbc2eb;
     border-radius: 50px;
 }
-.left-con .capacity-info1{
+
+.left-con .capacity-info1 {
     padding-top: 35%;
 }
-.test{
+
+.test {
     margin-top: 5%;
 }
-.cet{
+
+.cet {
     padding: 15%;
 }
-.setting{
-        width: 80px;
-        height: 80px;
-        border-radius: 100%;
-        color: blue;
-        background-color: rgb(57, 191, 224);
-    }
-.button1 {background-color: rgb(57, 191, 224);border-color: transparent;border-radius: 50px; width: 100px;height: 45px;} /* 绿色 */
-.button2 {background-color: #008CBA;border-color: transparent;border-radius: 50px;width: 100px;height: 45px;} /* 蓝色 */
-.button4 {background-color: #f44336;border-color: transparent;border-radius: 50px;width: 100px;height: 45px;} /* 红色 */
-.button3 {background-color: #e7e7e7; color: black;border-color: transparent;border-radius: 50px;width: 100px;height: 45px;} /* 灰色 */
-.right-con{
 
+.setting {
+    width: 80px;
+    height: 80px;
+    border-radius: 100%;
+    color: blue;
+    background-color: rgb(57, 191, 224);
+}
+
+.button1 {
+    background-color: rgb(57, 191, 224);
+    border-color: transparent;
+    border-radius: 50px;
+    width: 100px;
+    height: 45px;
+}
+
+/* 绿色 */
+.button2 {
+    background-color: #008CBA;
+    border-color: transparent;
+    border-radius: 50px;
+    width: 100px;
+    height: 45px;
+}
+
+/* 蓝色 */
+.button4 {
+    background-color: #f44336;
+    border-color: transparent;
+    border-radius: 50px;
+    width: 100px;
+    height: 45px;
+}
+
+/* 红色 */
+.button3 {
+    background-color: #e7e7e7;
+    color: black;
+    border-color: transparent;
+    border-radius: 50px;
+    width: 100px;
+    height: 45px;
+}
+
+/* 灰色 */
+.right-con {
+    margin-left: 260px;
     float: left;
 }
+
 html {
     height: 100%;
 }
@@ -117,6 +161,7 @@ body {
     background-color: rgba(0, 0, 0, 0.4);
     /* 黑色背景，半透明 */
 }
+
 .modal-content {
     background-color: #fefefe;
     margin: 25vh auto;
@@ -148,20 +193,63 @@ body {
     text-decoration: none;
     cursor: pointer;
 }
-.create-file{
+
+.create-file {
     float: left;
 }
-.update-flie{
+
+.update-flie {
     float: right;
 }
-.button33{
-    margin-top:80px;
+
+.button33 {
+    margin-top: 80px;
     float: right;
+    position: fixed;
+    bottom: 20px;
+    /* 距离底部20px */
+    right: 20px;
+    /* 距离右侧20px */
+    padding: 10px 15px;
+    /* 内边距 */
+    background-color: #007bff;
+    /* 背景颜色 */
+    color: white;
+    /* 文字颜色 */
+    border: none;
+    /* 无边框 */
+    border-radius: 5px;
+    /* 圆角边框 */
+    cursor: pointer;
+    /* 鼠标悬停时的指针形状 */
 }
-.gx{
-    width:1430px;
-    height:500px;
-    overflow-y:scroll;
+
+.button33_1 {
+    margin-top: 80px;
+    float: right;
+    position: fixed;
+    bottom: 80px;
+    /* 距离底部20px */
+    right: 20px;
+    /* 距离右侧20px */
+    padding: 10px 15px;
+    /* 内边距 */
+    background-color: #007bff;
+    /* 背景颜色 */
+    color: white;
+    /* 文字颜色 */
+    border: none;
+    /* 无边框 */
+    border-radius: 5px;
+    /* 圆角边框 */
+    cursor: pointer;
+    /* 鼠标悬停时的指针形状 */
+}
+
+.gx {
+    width: 1430px;
+    height: 500px;
+    overflow-y: hidden;
     overflow-x: hidden;
-    background:none;
+    background: none;
 }

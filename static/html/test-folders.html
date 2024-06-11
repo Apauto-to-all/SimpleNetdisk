@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>文件树</title>
+    <script src="../static/js/tset-folders.js"></script>
+    <style>
+        .icon::before {
+            content: "📁 ";
+        }
+
+        .folder {
+            margin-left: 20px;
+        }
+
+        .toggle {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            margin-right: 5px;
+            border: 1px solid black;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>文件树页面</h2>
+    <h3>用户：<span id="username"></span></h3>
+    <script>
+        // 获取用户名
+        fetch('/get_username', {
+            method: 'GET',
+        })
+            .then(response => response.text())  // 将响应转换为文本
+            .then(username => {
+                document.getElementById('username').textContent = username;
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+    <h3><span id="cp_or_move"></span></h3>
+    <script>
+        // 获取操作类型
+        fetch('/get_cp_or_move', {
+            method: 'GET',
+        })
+            .then(response => response.json())  // 将响应转换为JSON
+            .then(data => {
+                document.getElementById('cp_or_move').textContent = data.info;  // 使用info字段更新内容
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+    <div id="file-tree"></div>
+</body>
+
+</html>
