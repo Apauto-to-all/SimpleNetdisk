@@ -22,7 +22,6 @@ meter {
 }
 
 .left-con .user-info1{
-    padding-top: 15%;
     padding-left: 31%;
     width:33%;
     height:6%;
@@ -44,11 +43,8 @@ meter {
 .test{
     margin-top: 5%;
 }
-.cet1{
-    padding: 10%;
-}
 .cet{
-    padding: 30%;
+    padding: 15%;
 }
 .setting{
         width: 80px;
@@ -163,6 +159,9 @@ body {
     float: right;
 }
 .gx{
-    width:1200px;height:150px;overflow:scroll;
+    width:1430px;
+    height:500px;
+    overflow-y:scroll;
+    overflow-x: hidden;
     background:none;
 }

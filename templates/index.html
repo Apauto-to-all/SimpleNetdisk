@@ -10,38 +10,56 @@
 </head>
 <body class="container">
 <!-- <h2>登出功能实现</h2> -->
-<button id="logoutButton"
-        onclick="fetch('/logout', { method: 'GET', credentials: 'include' }).then(function(response) { if (response.redirected) { window.location.href = response.url; } });"
-        style="background-color: #008CBA;width: 50px;height: 25px;border-radius: 50px ">登出</button>
+
 <div class="main-content"><!-- 整体布局 -->
     <div class="left-con"><!-- 左布局 -->
         <!-- 显示用户信息 -->
         <!--  <h2>用户信息，以及容量信息</h2> -->
         <!--  --><!-- 1. 头像 -->
+        <br><br>
         <img class="user-info1" src="/user/avatar" alt="avatar">
         <!-- 2. 用户昵称 -->
-        <br>
+        <br><br>
         <center>
             <button class="user-info2" id="nickname">{{all_user.nickname}}</button>
         </center>
-        <!--     <p class="user-info2" id="nickname">
-            </p> -->
-        <!-- 3. 用户容量 -->
-        <p class="capacity-info1" id="capacity_total" style="font-size: 15px;">总容量: {{ all_user.capacity_total }}</p>
-        <br>
-        <p class="capacity-info2" id="capacity_used" style="font-size: 15px;">已用容量: {{ all_user.capacity_used }}</p>
-        <br>
-        <p class="capacity-info3" id="capacity_percent" style="font-size: 15px;">已用百分比: {{ all_user.capacity_percent }}</p>
-        <div class="cet1">
-            <p>
-                <span></span>
-                <meter min="0" max="100" value="{{ all_user.capacity_percent }}">350 degrees</meter>
-            </p>
-        </div>
+        <br><br><br>
+
         <!-- 显示用户信息，结束 -->
         <center class="cet">
+            <a href="../static/html/test-trash.html"><button id="5" class="button4" style="display: none">回收站</button>
+            <img src="../static/img/垃圾桶.png" alt="Button" id="imageButton4" style="cursor:pointer; width: 90px;height: 90px">
+
+    <script>
+        // 获取图片和按钮元素
+        var imageButton2 = document.getElementById('imageButton4');
+        var realButton2 = document.getElementById('5');
+
+        // 为图片添加点击事件监听器
+        imageButton2.addEventListener('click', function() {
+            // 触发按钮的点击事件
+            realButton2.click();
+        });
+    </script></a>
+        <br><br><br>
             <button id="changeUserInfoButton" class="setting">修改用户信息</button>
-    <!-- 模态窗口 -->
+            </center>
+<div class="cet1">
+        <center>
+                <p style="display: inline" class="capacity-info3" id="capacity_percent" style="font-size: 15px;">已用百分比: {{ all_user.capacity_percent }}</p>
+            <p style="display: inline">%</p>
+<br>
+    <meter min="0" max="100" value="{{ all_user.capacity_percent }}">350 degrees</meter>
+        </center>
+
+        </div>
+        <center>
+        <p>总容量/已用容量</p>
+        <p   style="display: inline" id="capacity_total" style="font-size: 15px;">{{ all_user.capacity_total }}</p>
+        <p style="display: inline">/</p>
+        <p style="display: inline" id="capacity_used" style="font-size: 15px;">{{ all_user.capacity_used }}</p>
+    </center>
+        <!-- 模态窗口 -->
     <div id="changeUserInfoModal" class="modal" style="display: none;">
         <div class="modal-content">
             <!-- 表单 -->
@@ -146,8 +164,6 @@
             <button id="changeUserInfoCancel">取消</button>
         </div>
     </div>
-        </center>
-
     <script>
         document.getElementById('changeUserInfoButton').onclick = function () {
             document.getElementById('changeUserInfoModal').style.display = "block";
@@ -158,20 +174,42 @@
     </script>
 <br><br><br>
     <!-- 文件树页面，用于复制和移动 -->
-    <a href="/cpMove"><button class="button2">跳转文件树页面</button></a>
-        <a href="../static/html/test-trash.html"><button class="button4">回收站</button></a>
+    {#<a href="/cpMove"><button class="button2">跳转文件树页面</button></a> #}
+        {#<a href="../static/html/test-trash.html"><button class="button4">回收站</button></a>#}
+<center>
+<button id="logoutButton"
+        onclick="fetch('/logout', { method: 'GET', credentials: 'include' }).then(function(response) { if (response.redirected) { window.location.href = response.url; } });"
+        style="background-color: #008CBA;width: 80px;height: 40px;border-radius: 50px; display: none">登出</button>
+    <img src="../static/img/登出.png" alt="Button2" id="imageButton2" style="cursor:pointer;width: 80px;height: 80px;">
 
+    <script>
+        // 获取图片和按钮元素
+        var imageButton1 = document.getElementById('imageButton2');
+        var realButton1 = document.getElementById('logoutButton');
+
+        // 为图片添加点击事件监听器
+        imageButton1.addEventListener('click', function() {
+            // 触发按钮的点击事件
+            realButton1.click();
+        });
+    </script>
+</center>
 </div>
     <div class="right-con"><!-- 右布局 -->
         <div class="test">
             <button class="button1" id="downloadButton" onclick="downloadALL()" style="margin-right: 80px">
                批量下载</button>
-            <button class="button2" id="moveButton" style="margin-right: 80px">
-               批量移动</button>
-            <button class="button3" id="copyButton" style="margin-right: 80px">
-               批量复制</button>
-            <button class="button4" id="deleteButton" onclick="deleteAll()" style="margin-right: 80px">
-                批量删除</button>
+            <button class="button2" id="moveButton" style="margin-right: 80px" onclick="openNewWindow()">批量移动</button>
+            <script>
+                function openNewWindow() {
+                    window.open("/cpMove", "_blank", "width=600,height=400");
+                    }</script>
+            <button class="button3" id="copyButton" style="margin-right: 80px" onclick="openNewWindow1()">批量复制</button>
+            <script>
+                function openNewWindow1() {
+                    window.open("/cpMove", "_blank", "width=600,height=400");
+                    }</script>
+            <button class="button4" id="deleteButton" onclick="deleteAll()" style="margin-right: 80px">批量删除</button>
              <script>
         // 批量下载
         async function downloadALL() {
@@ -436,7 +474,7 @@
         </script>
         {% endif %}
         <!-- 删除此文件夹 -->
-        <button id="deleteButton{{ folder_item.uuid }}">删除此文件夹</button>
+       <button id="deleteButton{{ folder_item.uuid }}">删除此文件夹</button>
         <script>
             document.getElementById('deleteButton{{ folder_item.uuid }}').addEventListener('click', function (event) {
                 fetch('/delete?folder_id={{ folder_item.uuid }}', {
@@ -455,7 +493,7 @@
             });
         </script>
         <!--重命名文件夹 -->
-        <button id="renameButton{{ folder_item.uuid }}">重命名此文件</button>
+        <button id="renameButton{{ folder_item.uuid }}" >重命名此文件</button>
         <!--模态窗口 -->
         <div id="renameModal{{ folder_item.uuid }}" class="renameModal" style="display: none;">
             <!-- 表单 -->
