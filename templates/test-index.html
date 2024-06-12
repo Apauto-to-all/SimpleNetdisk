@@ -48,21 +48,31 @@
                     }
                 }
                 document.getElementById('avatarForm').addEventListener('submit', function (event) {
+                    event.preventDefault(); // 阻止表单默认提交行为
+
                     var fileInput = document.getElementById('avatarFile');
                     if (fileInput.files.length === 0) {
-                        event.preventDefault();
                         alert('请至少选择一个文件上传');
                         return;
                     }
-                    event.preventDefault();
+
                     var formData = new FormData(this);
                     fetch('/change_user_avatar', {
                         method: 'POST',
                         body: formData
-                    }).then(
-                        //刷新页面
-                        location.reload()
-                    );
+                    }).then(response => {
+                        if (response.ok) {
+                            // 请求成功后刷新页面
+                            location.reload();
+                        } else {
+                            // 可以在这里处理错误情况
+                            alert('上传失败');
+                        }
+                    }).catch(error => {
+                        // 网络或其他错误
+                        console.error('上传出错:', error);
+                        alert('上传出错');
+                    });
                 });
             </script>
             <!-- 修改用户昵称 -->

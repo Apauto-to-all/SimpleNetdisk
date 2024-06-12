@@ -48,19 +48,19 @@
                 <br><br><br>
                 <button id="changeUserInfoButton" class="setting" style="display: none">修改用户信息</button>
                 <img src="../static/img/bianji.png" alt="Button" id="imageButton444"
-                        style="cursor:pointer; width: 90px;height: 90px">
+                    style="cursor:pointer; width: 90px;height: 90px">
 
-                    <script>
-                        // 获取图片和按钮元素
-                        var imageButton444 = document.getElementById('imageButton444');
-                        var realButton444 = document.getElementById('changeUserInfoButton');
+                <script>
+                    // 获取图片和按钮元素
+                    var imageButton444 = document.getElementById('imageButton444');
+                    var realButton444 = document.getElementById('changeUserInfoButton');
 
-                        // 为图片添加点击事件监听器
-                        imageButton444.addEventListener('click', function () {
-                            // 触发按钮的点击事件
-                            realButton444.click();
-                        });
-                    </script>
+                    // 为图片添加点击事件监听器
+                    imageButton444.addEventListener('click', function () {
+                        // 触发按钮的点击事件
+                        realButton444.click();
+                    });
+                </script>
             </center>
             <div class="cet1">
                 <center>
@@ -101,21 +101,31 @@
                             }
                         }
                         document.getElementById('avatarForm').addEventListener('submit', function (event) {
+                            event.preventDefault(); // 阻止表单默认提交行为
+
                             var fileInput = document.getElementById('avatarFile');
                             if (fileInput.files.length === 0) {
-                                event.preventDefault();
                                 alert('请至少选择一个文件上传');
                                 return;
                             }
-                            event.preventDefault();
+
                             var formData = new FormData(this);
                             fetch('/change_user_avatar', {
                                 method: 'POST',
                                 body: formData
-                            }).then(
-                                //刷新页面
-                                location.reload()
-                            );
+                            }).then(response => {
+                                if (response.ok) {
+                                    // 请求成功后刷新页面
+                                    location.reload();
+                                } else {
+                                    // 可以在这里处理错误情况
+                                    alert('上传失败');
+                                }
+                            }).catch(error => {
+                                // 网络或其他错误
+                                console.error('上传出错:', error);
+                                alert('上传出错');
+                            });
                         });
                     </script>
                     <!-- 修改用户昵称 -->
@@ -530,17 +540,17 @@
             </button>
             <img class="img_2" src="../static/img/创建文件夹.png" alt="Button" id="imageButton666">
 
-                        <script>
-                            // 获取图片和按钮元素
-                            var imageButton666 = document.getElementById('imageButton666');
-                            var realButton666 = document.getElementById('createFolderButton{{ folder_id }}');
+            <script>
+                // 获取图片和按钮元素
+                var imageButton666 = document.getElementById('imageButton666');
+                var realButton666 = document.getElementById('createFolderButton{{ folder_id }}');
 
-                            // 为图片添加点击事件监听器555
-                            imageButton666.addEventListener('click', function () {
-                                // 触发按钮的点击事件
-                                realButton666.click();
-                            });
-                        </script>
+                // 为图片添加点击事件监听器555
+                imageButton666.addEventListener('click', function () {
+                    // 触发按钮的点击事件
+                    realButton666.click();
+                });
+            </script>
             <!-- 模态窗口 -->
             <div id="createFolderModal{{ folder_id }}" class="modal" class="createFolderModal" style="display: none;">
                 <div class="modal-content">
@@ -588,17 +598,17 @@
             </button>
             <img class="img_1" src="../static/img/上传文件.png" alt="Button" id="imageButton555">
 
-                        <script>
-                            // 获取图片和按钮元素
-                            var imageButton555 = document.getElementById('imageButton555');
-                            var realButton555 = document.getElementById('555');
+            <script>
+                // 获取图片和按钮元素
+                var imageButton555 = document.getElementById('imageButton555');
+                var realButton555 = document.getElementById('555');
 
-                            // 为图片添加点击事件监听器555
-                            imageButton555.addEventListener('click', function () {
-                                // 触发按钮的点击事件
-                                realButton555.click();
-                            });
-                        </script>
+                // 为图片添加点击事件监听器555
+                imageButton555.addEventListener('click', function () {
+                    // 触发按钮的点击事件
+                    realButton555.click();
+                });
+            </script>
             <!-- 模态窗口 -->
             <div id="uploadModal" class="modal">
                 <div class="modal-content">
