@@ -11,7 +11,7 @@ port = 19764
 
 # 数据库配置
 db_name = "PostgreSQL"
-db_host = "47.121.25.171"
+db_host = ""
 db_port = 5432
 
 # 数据库
@@ -26,7 +26,7 @@ database = "SimpleCloud"
 只用于查询，更新，插入操作，无删除权限
 """
 connect_user = "simple_cloud_user"
-connect_user_password = "BiYCR@@Vbkk32$QnbT*VPR&x$Hiy6N"
+connect_user_password = ""
 
 # 保存登入的时间，单位为min
 login_time = 30
@@ -87,7 +87,7 @@ setup_logger()
 
 
 # 测试前缀
-isTest = True  # 是否为测试模式
+isTest = False  # 是否为测试模式
 test_prefix = ""  # 测试前缀
 if isTest:  # 如果为测试模式，使用有测试前缀的测试文件
     test_prefix = "test-"  # 测试前缀

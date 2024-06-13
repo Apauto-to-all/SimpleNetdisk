@@ -8,18 +8,17 @@ logger = logging.getLogger(__name__)
 
 
 class ShrinkOperate:
-    async def ShrinkTable_insert(self):
+    async def ShrinkTable_insert(self, file_type: str, shrink_path: str) -> bool:
         """
         插入缩略图
         :return: 如果插入成功就返回 True，否则返回 False
         """
         sql = """
-        INSERT INTO shrinks(url, code)
-        VALUES($1, $2)
+        INSERT INTO Shrink(Fitype, Spath) VALUES($1, $2)
         """
         try:
             async with self.pool.acquire() as connection:
-                result = await connection.execute(sql)
+                result = await connection.execute(sql, file_type, shrink_path)
                 return True if result else False
         except Exception as e:
             error_info = traceback.format_exc()
@@ -42,7 +41,7 @@ class ShrinkOperate:
         try:
             async with self.pool.acquire() as connection:
                 result = await connection.fetchval(sql, file_type)
-                return result[0].get("spath") if result else ""
+                return result if result else ""
         except Exception as e:
             error_info = traceback.format_exc()
             logger.error(error_info)

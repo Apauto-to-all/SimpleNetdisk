@@ -24,7 +24,7 @@ async def change_user_avatar(
         return response
 
     file_contents = await avatarFile.read()
-    if file_contents > 4 * 10240:  # 限制文件大小为 4MB
+    if len(file_contents) > 4 * 1024 * 1024:  # 限制文件大小为 4MB
         return {"error": "文件大小不能超过 4MB"}
     # 将文件转化为jpg文件，100*100大小
     # 将文件内容转换为图像
@@ -39,9 +39,11 @@ async def change_user_avatar(
 
     # 保存到磁盘
     path = os.path.join(config.user_avatar_path, f"{username}.jpg")
+    # 删除源头像文件
+    if not os.path.exists(path):
+        # 更新数据库中的头像路径
+        await user_utils.change_user_avatar_path(username, path)
     image.save(path, "JPEG")
-    # 更新数据库中的头像路径
-    await user_utils.change_user_avatar_path(username, path)
 
 
 # 修改用户昵称
